@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="de" data-theme="dunkel">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Zeiterfassung</title>
+<meta name="description" content="Rufbereitschaft · Ruhezeit · Verdienst · TV-Ärzte/TdL">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Zeiterfassung">
+<meta name="theme-color" content="#0d1a30">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{
+  --bg1:#0b1730;--bg2:#0e2a3f;--txt:#f2f5fa;--txt2:rgba(242,245,250,.62);--txt3:rgba(242,245,250,.42);
+  --karte:rgba(255,255,255,.07);--rand:rgba(255,255,255,.14);--rand2:rgba(255,255,255,.05);
+  --pauschale:#5c94ff;--grund:#33cc8f;--ueberstd:#ffb840;--zuschlag:#ff6b66;--technisch:#40bfd9;--vorort:#ff9e33;
+  --akzent1:#4d8ffa;--akzent2:#38b8d1;--tabbar:rgba(12,24,45,.72);--glow1:rgba(77,143,250,.32);--glow2:rgba(56,184,209,.26);
+  --feld:rgba(255,255,255,.09);--sel:rgba(92,148,255,.16);
+}
+html[data-theme="hell"]{
+  --bg1:#e8eef8;--bg2:#d9e9f0;--txt:#111a2b;--txt2:rgba(17,26,43,.62);--txt3:rgba(17,26,43,.42);
+  --karte:rgba(255,255,255,.62);--rand:rgba(255,255,255,.9);--rand2:rgba(255,255,255,.3);
+  --tabbar:rgba(240,245,252,.8);--glow1:rgba(77,143,250,.22);--glow2:rgba(56,184,209,.2);--feld:rgba(0,0,0,.06);--sel:rgba(92,148,255,.16);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg1)}
+body{font-family:Arial,Helvetica,sans-serif;color:var(--txt);font-size:16px;line-height:1.35;
+  background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 100%) fixed;text-align:center;
+  padding-bottom:calc(84px + env(safe-area-inset-bottom));overscroll-behavior-y:none}
+body::before,body::after{content:"";position:fixed;z-index:-1;border-radius:50%;filter:blur(70px);pointer-events:none}
+body::before{width:60vw;height:60vw;left:-18vw;top:6vh;background:var(--glow1)}
+body::after{width:55vw;height:55vw;right:-16vw;bottom:14vh;background:var(--glow2)}
+main{max-width:640px;margin:0 auto;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;flex-direction:column;gap:14px}
+.kopf{padding-top:6px}
+.logo{width:40px;height:40px;border-radius:50%;margin:0 auto 6px;background:linear-gradient(135deg,var(--akzent1),var(--akzent2));display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px var(--glow1)}
+.logo svg{width:22px;height:22px}
+h1{font-size:30px;margin:0;font-weight:700}
+.sub{color:var(--txt2);font-size:13px;margin-top:2px}
+.karte{background:var(--karte);border:1px solid var(--rand);border-radius:22px;padding:18px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:0 6px 14px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:12px}
+.karte h2{font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--txt2);margin:0;font-weight:700}
+.mini{font-size:11.5px;color:var(--txt2)}.tert{color:var(--txt3)}.small{font-size:13px}.b{font-weight:700}.sec{color:var(--txt2)}
+.left{text-align:left}.mono{font-variant-numeric:tabular-nums}
+.btn{border:0;border-radius:14px;padding:13px 16px;font:700 16px Arial;color:#fff;background:linear-gradient(135deg,var(--akzent1),var(--akzent2));width:100%;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.2)}
+.btn:disabled{opacity:.5}
+.btn.tint{background:linear-gradient(135deg,var(--c1),var(--c2))}
+.btn.grau{background:rgba(128,128,128,.35)}
+.btn.klein{padding:8px 12px;font-size:13px;width:auto;border-radius:10px}
+.btn.rand{background:var(--feld);color:var(--txt);box-shadow:none;font-weight:400}
+.row{display:flex;gap:10px;align-items:center}.row>*{flex:1}
+.seg{display:flex;background:var(--feld);border-radius:10px;padding:2px}
+.seg button{flex:1;border:0;background:transparent;color:var(--txt);padding:8px;border-radius:8px;font:15px Arial;cursor:pointer}
+.seg button.on{background:rgba(255,255,255,.22);font-weight:700}
+html[data-theme="hell"] .seg button.on{background:#fff}
+input,select,textarea{font:16px Arial;color:var(--txt);background:var(--feld);border:1px solid var(--rand2);border-radius:10px;padding:9px 10px;color-scheme:dark}
+html[data-theme="hell"] input,html[data-theme="hell"] select{color-scheme:light}
+input[type=datetime-local],input[type=date],input[type=time]{width:100%}
+.feld{display:flex;align-items:center;gap:8px;text-align:left}.feld label{flex:0 0 68px;font-size:13px;color:var(--txt2)}.feld input,.feld select{flex:1;min-width:0}
+.chip{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid transparent}
+.chip.technisch{color:var(--technisch);background:rgba(64,191,217,.18);border-color:rgba(64,191,217,.45)}
+.chip.vorort{color:var(--vorort);background:rgba(255,158,51,.18);border-color:rgba(255,158,51,.45)}
+.chip.rot{color:var(--zuschlag);background:rgba(255,107,102,.18)}
+.ergebnis{border-radius:22px;padding:18px;border:1px solid;display:flex;flex-direction:column;gap:10px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.ergebnis.gruen{background:rgba(52,199,89,.16);border-color:rgba(52,199,89,.45);box-shadow:0 8px 24px rgba(52,199,89,.2)}
+.ergebnis.orange{background:rgba(255,149,0,.18);border-color:rgba(255,149,0,.45);box-shadow:0 8px 24px rgba(255,149,0,.2)}
+.ergebnis.rot{background:rgba(255,69,58,.18);border-color:rgba(255,69,58,.45);box-shadow:0 8px 24px rgba(255,69,58,.2)}
+.ergebnis.laeuft{background:rgba(255,107,102,.14);border-color:rgba(255,107,102,.45)}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:6px}
+.dot.gruen{background:#34c759;box-shadow:0 0 6px #34c759}.dot.orange{background:#ff9500;box-shadow:0 0 6px #ff9500}.dot.rot{background:#ff453a;box-shadow:0 0 6px #ff453a}
+.hero{font-size:60px;font-weight:700;line-height:1;margin:4px 0}
+.gruenT{color:#34c759}.orangeT{color:#ff9500}.rotT{color:#ff453a}
+details summary{cursor:pointer;font-size:13px;font-weight:700;list-style:none}
+details summary::after{content:" ▸";color:var(--txt2)}details[open] summary::after{content:" ▾"}
+.zeile{display:flex;justify-content:space-between;gap:10px;text-align:left;font-size:12px}.zeile span:first-child{color:var(--txt2)}.zeile span:last-child{font-weight:700;text-align:right}
+hr{border:0;border-top:1px solid var(--rand2);margin:2px 0;width:100%}
+.eintrag{text-align:left;display:flex;flex-direction:column;gap:3px}
+.eintrag .kopfz{display:flex;justify-content:space-between;align-items:baseline}
+.eintrag .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11.5px;color:var(--txt2)}
+.ausgeblendet{display:flex;gap:8px;align-items:center;text-align:left;color:var(--txt2);padding:8px;border-radius:10px;border:1px dashed var(--rand);background:rgba(128,128,128,.08);cursor:pointer}
+.ausgeblendet .t{text-decoration:line-through;font-size:13px}
+.ausgeblendet .u{font-size:11.5px}
+.tag{display:flex;gap:8px;align-items:center;font-size:13px;text-align:left}.tag .m{color:var(--pauschale)}
+.kachel{flex:1;padding:8px 4px;border-radius:12px;display:flex;flex-direction:column;gap:2px}
+.kachel .n{font-size:24px;font-weight:700}.kachel .l{font-size:11.5px;color:var(--txt2)}
+.kachel.g{background:rgba(51,204,143,.14);color:var(--grund)}.kachel.t{background:rgba(64,191,217,.14);color:var(--technisch)}
+.kachel.v{background:rgba(255,158,51,.14);color:var(--vorort)}.kachel.p{background:rgba(92,148,255,.14);color:var(--pauschale)}
+.kachel.gross .n{font-size:34px}.kachel .e{font-size:13px;font-weight:700;color:var(--txt)}
+.auswahl{display:flex;gap:8px;align-items:center;text-align:left;padding:7px 10px;border-radius:10px;background:rgba(128,128,128,.08);font-size:11.5px;color:var(--txt2)}
+.auswahl.on{background:rgba(128,128,128,.14);font-size:13px;font-weight:700;color:var(--txt)}
+.grafik{position:relative;width:100%}
+canvas{width:100%!important}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:4px 6px;text-align:right}td:first-child,th:first-child{text-align:left}
+th{font-weight:400;font-size:11.5px;color:var(--txt2)}tr.hv{background:var(--sel);border-radius:6px}tr.sum td{font-weight:700;border-top:1px solid var(--rand2)}
+td .d{display:block;font-size:11px;color:var(--txt2)}td.nw{white-space:nowrap}
+.legende{display:flex;flex-direction:column;gap:8px}.legende div{display:flex;align-items:center;gap:8px;font-size:13px}.legende .sw{width:12px;height:12px;border-radius:4px}.legende .sp{flex:1;text-align:left}
+.balken{display:flex;height:12px;border-radius:6px;overflow:hidden;width:100%}
+.nav{display:flex;align-items:center;justify-content:space-between}.nav button{background:none;border:0;color:var(--akzent1);font-size:22px;cursor:pointer;padding:0 8px}
+.tabs{position:fixed;left:0;right:0;bottom:0;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:var(--tabbar);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--rand2);display:flex;justify-content:space-around;z-index:20}
+.tabs button{background:none;border:0;color:var(--txt2);font:11px Arial;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;border-radius:12px;cursor:pointer;min-width:58px}
+.tabs button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabs button.on{color:var(--akzent1);background:rgba(92,148,255,.14)}
+.zahnrad{position:fixed;right:16px;top:calc(8px + env(safe-area-inset-top));z-index:15;width:44px;height:44px;border-radius:50%;border:1px solid var(--rand);background:var(--karte);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:var(--txt);font-size:20px;cursor:pointer}
+.sheet{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center}
+.sheet.on{display:flex}
+.sheet .inner{background:var(--bg1);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:14px 16px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;text-align:left}
+.sheet h3{margin:0;font-size:17px;text-align:center}
+.sheet .sec-t{font-size:11.5px;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;margin-top:6px}
+.sheet .r{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--karte);border:1px solid var(--rand2);border-radius:10px;padding:10px 12px;font-size:15px}
+.sheet .r input,.sheet .r select{flex:1;text-align:right;background:transparent;border:0;padding:0;max-width:60%}
+.sheet .r input[type=checkbox]{flex:0;width:22px;height:22px}
+.sheet .r input[type=time]{width:auto}
+.ok{color:var(--grund);font-weight:700;font-size:13px}.warn{color:var(--zuschlag);font-size:13px}
+.hint{font-size:11.5px;color:var(--txt2)}
+.imp-eintrag{text-align:left;display:flex;flex-direction:column;gap:6px;padding:8px 0;border-bottom:1px solid var(--rand2)}
+.imp-eintrag .k{display:flex;gap:10px;align-items:flex-start}.imp-eintrag input[type=checkbox]{width:22px;height:22px;flex:0 0 22px;margin-top:2px}
+.vorschau{max-width:100%;max-height:220px;border-radius:10px}
+.roh{font:11px monospace;text-align:left;white-space:pre-wrap;max-height:200px;overflow:auto;color:var(--txt2)}
+@keyframes fade{from{opacity:0}to{opacity:1}}.karte,.ergebnis{animation:fade .25s}
+</style>
+</head>
+<body>
+<button class="zahnrad" id="zahnrad" aria-label="Einstellungen">⚙︎</button>
+<main id="view"></main>
+<nav class="tabs" id="tabs"></nav>
+<div class="sheet" id="sheet"><div class="inner" id="sheetInner"></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+<script>
+'use strict';
+// ============================================================ Grundlagen
+const LS = 'zeiterfassung.v1';
+const pad = n => String(n).padStart(2, '0');
+const at = (d, hhmm) => { const [h, m] = String(hhmm).split(':').map(Number); const x = new Date(d); x.setHours(h || 0, m || 0, 0, 0); return x; };
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const addMin = (d, n) => new Date(d.getTime() + n * 60000);
+const sod = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+const wd = d => d.getDay() + 1;                    // 1 = So … 7 = Sa (wie Swift)
+const istWerktag = d => d.getDay() >= 1 && d.getDay() <= 5;
+const monatStart = d => new Date(d.getFullYear(), d.getMonth(), 1);
+const addMonths = (d, n) => new Date(d.getFullYear(), d.getMonth() + n, 1);
+const toInput = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const toDateInput = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const WD = ['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'];
+const MON = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+const MONK = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+const Fmt = {
+  zeit: d => `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+  datum: d => `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`,
+  kurz: d => `${WD[d.getDay()]} ${pad(d.getDate())}.${pad(d.getMonth() + 1)}. · ${Fmt.zeit(d)}`,
+  tag: d => `${WD[d.getDay()]} ${pad(d.getDate())}.${pad(d.getMonth() + 1)}.`,
+  monat: d => `${MON[d.getMonth()]} ${d.getFullYear()}`,
+  euro: v => (Math.round(v * 100) / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }),
+  dauer: min => { const m = Math.round(Math.max(0, min)), h = Math.floor(m / 60), r = m % 60; return h > 0 && r > 0 ? `${h} h ${r} min` : h > 0 ? `${h} h` : `${r} min`; },
+};
+const TYP = { technisch: 'Technisch (daheim)', vorort: 'Vor Ort' };
+
+// ============================================================ Daten (lokal im Browser)
+function defaultSettings() {
+  return { entgeltgruppe: 'Ä3', stufe: 1, dienstbeginn: '08:00', dienstende: '16:30', refRuheStunden: 11, name: '', mail: '', empfaenger: '',
+    bundesland: 'NW', ohneFreizeitausgleich: true, darstellung: 'dunkel' };
+}
+let DB = { einsaetze: [], tage: [], s: defaultSettings() };
+function load() {
+  try { const j = JSON.parse(localStorage.getItem(LS) || 'null'); if (j) { DB = j; DB.s = Object.assign(defaultSettings(), j.s || {}); } } catch (e) {}
+}
+function save() { try { localStorage.setItem(LS, JSON.stringify(DB)); } catch (e) { alert('Speichern fehlgeschlagen: ' + e); } }
+// Einsatz: {id, beginn, ende (ISO), typ, quelle, aktiv, laeuft, hinweis}
+const B = e => new Date(e.beginn), E = e => new Date(e.ende);
+const EW = e => e.laeuft ? new Date(Math.max(Date.now(), B(e).getTime() + 3 * 60000)) : E(e);
+const dauerMin = e => Math.max(0, (EW(e) - B(e)) / 60000);
+const aktive = () => DB.einsaetze.filter(e => e.aktiv !== false);
+const S = () => DB.s;
+
+// ============================================================ Feiertage (Gauß)
+const Feiertage = {
+  ostern(j) { const a = j % 19, b = Math.floor(j / 100), c = j % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3),
+    h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const mo = Math.floor((h + l - 7 * m + 114) / 31), ta = ((h + l - 7 * m + 114) % 31) + 1; return new Date(j, mo - 1, ta); },
+  cache: {},
+  liste(j, bl) {
+    const key = j + bl; if (this.cache[key]) return this.cache[key];
+    const fix = (m, d) => new Date(j, m - 1, d), o = this.ostern(j);
+    const t = [fix(1, 1), addDays(o, -2), addDays(o, 1), fix(5, 1), addDays(o, 39), addDays(o, 50), fix(10, 3), fix(12, 25), fix(12, 26)];
+    if (['NW', 'BW', 'BY', 'HE', 'RP', 'SL'].includes(bl)) { t.push(addDays(o, 60)); t.push(fix(11, 1)); }
+    if (['BB', 'MV', 'SN', 'ST', 'TH', 'HH', 'HB', 'NI', 'SH', 'BE'].includes(bl)) t.push(fix(10, 31));
+    if (bl === 'BY') { t.push(fix(1, 6)); t.push(fix(8, 15)); }
+    if (bl === 'SN') { let d = new Date(j, 10, 22); while (d.getDay() !== 3) d = addDays(d, -1); t.push(d); }
+    return this.cache[key] = new Set(t.map(x => sod(x).getTime()));
+  },
+  ist(d, bl) { return this.liste(d.getFullYear(), bl).has(sod(d).getTime()); },
+};
+
+// ============================================================ Tarif (TV-Ärzte/TdL, 40 h)
+const Entgelttabelle = {
+  divisor: 40 * 4.348,
+  gruppen: ['Ä1', 'Ä2', 'Ä3', 'Ä4'],
+  bezeichnungen: { 'Ä1': 'Arzt', 'Ä2': 'Facharzt', 'Ä3': 'Oberarzt', 'Ä4': 'CA-Vertreter' },
+  tabellen: [
+    { ab: new Date(2026, 0, 1), bez: 'ab 01.01.2026 (Anlage B 2, 9. ÄTV)', w: { 'Ä1': [5626.91, 5945.86, 6173.67, 6568.57, 7039.34, 7222.97], 'Ä2': [7426.63, 8049.32, 8596.06, 8903.30, 9070.79, 9302.27], 'Ä3': [9302.27, 9849.02, 10631.15, 10942.53], 'Ä4': [10942.53, 11724.64, 12347.33] } },
+    { ab: new Date(2026, 3, 1), bez: 'ab 01.04.2026 (+2,95 %, Tarifrunde 2026)', w: { 'Ä1': [5792.90, 6121.26, 6355.79, 6762.34, 7247.00, 7436.05], 'Ä2': [7645.72, 8286.77, 8849.64, 9165.95, 9338.38, 9576.69], 'Ä3': [9576.69, 10139.57, 10944.77, 11265.33], 'Ä4': [11265.33, 12070.52, 12711.58] } },
+    { ab: new Date(2027, 8, 1), bez: 'ab 01.09.2027 (+2,45 %, Tarifrunde 2026)', w: { 'Ä1': [5934.83, 6271.23, 6511.51, 6928.02, 7424.55, 7618.23], 'Ä2': [7833.04, 8489.80, 9066.46, 9390.52, 9567.17, 9811.32], 'Ä3': [9811.32, 10387.99, 11212.92, 11541.33], 'Ä4': [11541.33, 12366.25, 13023.01] } },
+  ],
+  tabelle(d = new Date()) { let t = this.tabellen[0]; for (const x of this.tabellen) if (x.ab <= d) t = x; return t; },
+  stufen(g) { return (this.tabellen[this.tabellen.length - 1].w[g] || []).length; },
+  monatsentgelt(g, st, d) { const s = this.tabelle(d).w[g]; if (!s || !s.length) return 0; return s[Math.min(Math.max(st, 1), s.length) - 1]; },
+  stundenentgelt(g, st, d) { return this.monatsentgelt(g, st, d) / this.divisor; },
+};
+const Verdienst = {
+  zUe: 0.15, zNacht: 0.20, zSo: 0.25, zFeiOhne: 1.35, zFeiMit: 0.35, zSa: 0.20,
+  zerlegung(b) { const t = []; if (b.pauschale > .005) t.push('Pauschale ' + Fmt.euro(b.pauschale)); if (b.grund > .005) t.push('Grund ' + Fmt.euro(b.grund));
+    if (b.ueberstd > .005) t.push('ÜS 15 % ' + Fmt.euro(b.ueberstd)); if (b.zuschlag > .005) t.push('Zuschlag ' + Fmt.euro(b.zuschlag)); return t.join(' + '); },
+  summe: b => b.pauschale + b.grund + b.ueberstd + b.zuschlag,
+  leer: () => ({ pauschale: 0, grund: 0, ueberstd: 0, zuschlag: 0 }),
+  pauschale(t, s) {
+    const d = new Date(t.beginn), se = Entgelttabelle.stundenentgelt(s.entgeltgruppe, s.stufe, d);
+    const fei = Feiertage.ist(d, s.bundesland), we = !istWerktag(d), std = (new Date(t.ende) - d) / 3600000;
+    if (std >= 12) { const f = (fei || we) ? 4 : 2, art = fei ? 'Feiertag' : we ? 'Wochenende' : 'Werktag';
+      return { datum: d, titel: 'Rufbereitschaft-Pauschale', detail: `${art} · ${f}× Stundenentgelt`, b: Object.assign(this.leer(), { pauschale: f * se }) }; }
+    const h = Math.ceil(std); return { datum: d, titel: 'Rufbereitschaft < 12 h', detail: `${h} angef. Std. × 12,5 %`, b: Object.assign(this.leer(), { pauschale: h * 0.125 * se }) };
+  },
+  bewertet(e) { const m = dauerMin(e); return e.typ === 'vorort' ? Math.ceil(m / 60) * 60 : m; },
+  inanspruchnahme(e, s) {
+    const b0 = B(e), seE = Entgelttabelle.stundenentgelt(s.entgeltgruppe, Math.min(s.stufe, 4), b0);
+    const se3 = Entgelttabelle.stundenentgelt(s.entgeltgruppe, Math.min(3, Entgelttabelle.stufen(s.entgeltgruppe)), b0);
+    const bewMin = this.bewertet(e), bewStd = bewMin / 60, grund = bewStd * seE, ue = bewStd * se3 * this.zUe;
+    let gew = 0; const arten = new Set(); const ende = EW(e); let cur = new Date(b0);
+    while (cur < ende) {
+      const h = cur.getHours(); let satz = 0;
+      if (Feiertage.ist(cur, s.bundesland)) { satz = s.ohneFreizeitausgleich ? this.zFeiOhne : this.zFeiMit; arten.add('Feiertag'); }
+      else if (cur.getDay() === 0) { satz = this.zSo; arten.add('Sonntag'); }
+      if (h >= 20 || h < 6) { if (this.zNacht > satz) { satz = this.zNacht; arten.add('Nacht'); } }
+      if (cur.getDay() === 6 && h >= 13 && h < 20) { if (this.zSa > satz) { satz = this.zSa; arten.add('Samstag'); } }
+      gew += satz; cur = addMin(cur, 1);
+    }
+    const dm = dauerMin(e), skal = dm > 0 ? bewMin / dm : 1, zu = (gew / 60) * se3 * skal;
+    let detail = `${TYP[e.typ]} · ${Fmt.dauer(dm)}`; if (e.typ === 'vorort' && bewMin !== dm) detail += ` → ${Fmt.dauer(bewMin)} (volle Std.)`;
+    if (arten.size) detail += ' · ' + [...arten].sort().join('/');
+    return { datum: b0, titel: 'Inanspruchnahme', detail, b: Object.assign(this.leer(), { grund, ueberstd: ue, zuschlag: zu }) };
+  },
+  monat(m, s) {
+    const von = monatStart(m), bis = addMonths(von, 1), im = d => d >= von && d < bis;
+    const pausch = DB.tage.filter(t => im(new Date(t.beginn))).sort((a, b) => a.beginn < b.beginn ? -1 : 1).map(t => this.pauschale(t, s));
+    const eins = aktive().filter(e => im(B(e))).sort((a, b) => a.beginn < b.beginn ? -1 : 1).map(e => this.inanspruchnahme(e, s));
+    const bs = [...pausch, ...eins].reduce((a, p) => ({ pauschale: a.pauschale + p.b.pauschale, grund: a.grund + p.b.grund, ueberstd: a.ueberstd + p.b.ueberstd, zuschlag: a.zuschlag + p.b.zuschlag }), this.leer());
+    const ps = pausch.reduce((a, p) => a + this.summe(p.b), 0), es = eins.reduce((a, p) => a + this.summe(p.b), 0);
+    return { pauschalen: pausch, einsaetze: eins, bausteine: bs, pauschalenSumme: ps, einsatzSumme: es, gesamt: ps + es };
+  },
+};
+
+// ============================================================ Ruhezeit (ArbZG / TV-Ärzte)
+const Rest = {
+  schwelle: 5.5 * 60,
+  roundUpQuarter(d) { const q = 15 * 60000; return new Date(Math.ceil(d.getTime() / q) * q); },
+  lastWorkEnd(ref, dienstende) { let x = at(ref, dienstende); if (x > ref) x = at(addDays(x, -1), dienstende); let g = 0; while (!istWerktag(x) && g < 14) { x = at(addDays(x, -1), dienstende); g++; } return x; },
+  merged(pairs) { const s = [...pairs].sort((a, b) => a[0] - b[0]); let tot = 0, cur = null;
+    for (const [b, e] of s) { if (cur && b <= cur[1]) { if (e > cur[1]) cur[1] = e; } else { if (cur) tot += (cur[1] - cur[0]) / 60000; cur = [b, e]; } }
+    if (cur) tot += (cur[1] - cur[0]) / 60000; return tot; },
+  compute(einsaetze, s) {
+    const es = einsaetze.filter(e => e.aktiv !== false); if (!es.length) return null;
+    const lastEnde = new Date(Math.max(...es.map(e => EW(e).getTime())));
+    let regulaer = at(lastEnde, s.dienstbeginn); if (regulaer <= lastEnde) regulaer = addDays(regulaer, 1);
+    const fensterStart = this.lastWorkEnd(regulaer, s.dienstende), fensterMin = (regulaer - fensterStart) / 60000;
+    const nacht = es.filter(e => B(e) < regulaer && EW(e) > fensterStart).sort((a, b) => B(a) - B(b));
+    const pairs = nacht.map(e => [Math.max(B(e), fensterStart), Math.min(EW(e), regulaer)]).filter(p => p[1] > p[0]);
+    const einsatzMin = this.merged(pairs), nettoRuheMin = Math.max(0, fensterMin - einsatzMin), refMin = s.refRuheStunden * 60;
+    const letzteRuheMin = Math.max(0, (regulaer - lastEnde) / 60000);
+    let ampel, earliest, delay = 0, ausgleich = 0, ausfall = 0, hyp = null;
+    if (letzteRuheMin < this.schwelle) { ampel = 'rot'; let roh = addMin(lastEnde, refMin); if (roh < regulaer) roh = regulaer; earliest = this.roundUpQuarter(roh); delay = (earliest - regulaer) / 60000; ausfall = delay; }
+    else if (letzteRuheMin < refMin) { ampel = 'orange'; earliest = regulaer; ausgleich = refMin - letzteRuheMin; hyp = this.roundUpQuarter(addMin(lastEnde, refMin)); }
+    else { ampel = 'gruen'; earliest = regulaer; }
+    return { lastEnde, regulaer, fensterStart, fensterMin, einsatzMin, nettoRuheMin, letzteRuheMin, refMin, ampel, earliest, delayMin: delay, ausgleichMin: ausgleich, ausfallMin: ausfall, hypEarliest: hyp, nachtEinsaetze: nacht };
+  },
+};
+
+// ============================================================ Rufbereitschaftstage, Zusammenführen
+const RB = {
+  frei: (d, s) => !istWerktag(d) || Feiertage.ist(d, s.bundesland),
+  fensterAnTag(tag, s) { const d0 = sod(tag); return { beginn: this.frei(d0, s) ? at(d0, s.dienstbeginn) : at(d0, s.dienstende), ende: at(addDays(d0, 1), s.dienstbeginn) }; },
+  fenster(t, s) { const h = this.fensterAnTag(t, s); if (t >= h.beginn && t < h.ende) return h; const g = this.fensterAnTag(addDays(t, -1), s); if (t >= g.beginn && t < g.ende) return g; return null; },
+  istDublette(tag) { return DB.tage.some(t => Math.abs(new Date(t.beginn) - tag) < 60000); },
+  ergaenzeTag(e, s) { const f = this.fenster(B(e), s); if (!f) return null; if (this.istDublette(f.beginn)) return null;
+    const t = { id: uid(), beginn: f.beginn.toISOString(), ende: f.ende.toISOString(), quelle: e.quelle || 'manuell' }; DB.tage.push(t); return t; },
+  kollision(beginn, ende, ausser) { return aktive().find(e => e.id !== ausser && B(e) < ende && EW(e) > beginn) || null; },
+  einfuegen(beginn, ende, typ, quelle) {
+    const neu = { id: uid(), beginn: beginn.toISOString(), ende: ende.toISOString(), typ, quelle, aktiv: true, laeuft: false, hinweis: '' };
+    const k = this.kollision(beginn, ende); DB.einsaetze.push(neu);
+    if (k) { const kb = new Date(Math.min(B(k), beginn)), ke = new Date(Math.max(EW(k), ende)); k.beginn = kb.toISOString(); k.ende = ke.toISOString(); k.laeuft = false;
+      if (typ === 'vorort') k.typ = 'vorort'; neu.aktiv = false; neu.hinweis = `in ${Fmt.kurz(kb)}–${Fmt.zeit(ke)} aufgegangen`; return { art: 'zusammengefuehrt', k, neu }; }
+    return { art: 'neu', neu };
+  },
+};
+
+// ============================================================ Mail / Texte
+const Mail = {
+  oeffne(an, cc, betreff, text) { const to = an.split(/[,;]/).map(x => x.trim()).filter(Boolean).join(','); let q = `subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(text)}`; if (cc) q += `&cc=${encodeURIComponent(cc)}`; location.href = `mailto:${to}?${q}`; },
+  liste: es => es.map(e => `- ${Fmt.kurz(B(e))}–${Fmt.zeit(EW(e))} (${Fmt.dauer(dauerMin(e))}) ${TYP[e.typ]}`).join('\n'),
+  meldung(r, s) {
+    const refH = s.refRuheStunden, liste = this.liste(r.nachtEinsaetze);
+    if (r.ampel === 'rot') { const z = Fmt.zeit(r.earliest); return { betreff: `Verschobener Dienstbeginn – ${z} Uhr`,
+      text: `Guten Morgen,\n\ndurch eine nächtliche Inanspruchnahme während der Rufbereitschaft konnte die vorgeschriebene Ruhezeit nicht eingehalten werden. Ich kann meinen Dienst daher erst um ${z} Uhr antreten (letzter Einsatz endete um ${Fmt.zeit(r.lastEnde)} Uhr, im Anschluss sind ${refH} Stunden ununterbrochene Ruhezeit einzuhalten).\n\nBetroffene Einsätze in dieser Nacht:\n${liste}\n\nDie ausfallende Zeit gilt als bezahlte Arbeitszeit.\n\nVielen Dank für euer Verständnis.\n\nViele Grüße\n${s.name}` }; }
+    if (r.ampel === 'orange') { const hyp = r.hypEarliest ? Fmt.zeit(r.hypEarliest) : '–'; return { betreff: 'Verkürzte Ruhezeit nach Rufbereitschaft',
+      text: `Guten Morgen,\n\ndurch nächtliche Inanspruchnahmen während der Rufbereitschaft war meine zusammenhängende Ruhezeit kürzer als vorgesehen (${Fmt.dauer(r.letzteRuheMin)} statt ${refH} Stunden). Ich nehme meinen Dienst wie geplant auf, möchte aber vorsorglich einen Ausgleichsanspruch von ${Fmt.dauer(r.ausgleichMin)} anmelden, der zu einem späteren Zeitpunkt als Freizeit auszugleichen ist.\n\nZur Information: Ohne die Möglichkeit eines Ausgleichs hätte sich mein Dienstbeginn auf ${hyp} Uhr verschoben (letzter Einsatz + ${refH} Stunden).\n\nBetroffene Einsätze in dieser Nacht:\n${liste}\n\nViele Grüße\n${s.name}` }; }
+    return null;
+  },
+  protokoll(s) {
+    const es = aktive().sort((a, b) => B(a) - B(b)), lines = ['Rufbereitschaft – Einsatzprotokoll', ''];
+    for (const e of es) lines.push(`${Fmt.kurz(B(e))}–${Fmt.zeit(EW(e))}  (${Fmt.dauer(dauerMin(e))})  ${TYP[e.typ]}`);
+    lines.push('', `Summe: ${es.length} Einsätze, ${Fmt.dauer(Rest.merged(es.map(e => [B(e), EW(e)])))}`);
+    if (DB.tage.length) lines.push(`Rufbereitschaftstage: ${DB.tage.length}`);
+    const r = Rest.compute(es, s), refH = s.refRuheStunden;
+    if (r && r.ampel === 'orange') lines.push('', 'Hinweis (vorsorglich vermerkt):', `Letzte zusammenhängende Ruhe ${Fmt.dauer(r.letzteRuheMin)} (unter ${refH} h) – Ausgleichsanspruch ${Fmt.dauer(r.ausgleichMin)} zu anderen Zeiten auszugleichen. Ohne Ausgleich wäre ein Dienstbeginn um ${r.hypEarliest ? Fmt.zeit(r.hypEarliest) : '–'} Uhr nötig gewesen.`);
+    if (r && r.ampel === 'rot') lines.push('', 'Hinweis (vorsorglich vermerkt):', `Dienstbeginn musste auf ${Fmt.zeit(r.earliest)} Uhr verschoben werden (letzter Einsatz + ${refH} h Ruhezeit) – Ausfallzeit ${Fmt.dauer(r.ausfallMin)} gilt als bezahlte Arbeitszeit.`);
+    return lines.join('\n');
+  },
+};
+
+// ============================================================ UI-Zustand
+const UI = { tab: localStorage.getItem('zeiterfassung.tab') || 'rechner', form: { typ: 'technisch', beginn: toInput(new Date()), ende: toInput(new Date()) }, meldung: '',
+  verdienstMonat: monatStart(new Date()), statMonat: monatStart(new Date()), zeitraum: 'monat', masz: 'anrufe', jahrMasz: 'anzahl', sel: {},
+  imp: { bild: null, zeilen: [], eintraege: [], monat: new Date().getMonth() + 1, jahr: new Date().getFullYear(), quelle: null, fehler: '', erfolg: '', laeuft: false }, neuerTag: toDateInput(new Date()), kopiert: false };
+const charts = {};
+function chart(id, cfg) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } const c = document.getElementById(id); if (!c) return null; return charts[id] = new Chart(c, cfg); }
+const $ = id => document.getElementById(id);
+const logoSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="12" r="8"/><path d="M11 7v5l3 2"/><path d="M16 18l2 2 4-4" stroke-width="2.4"/></svg>`;
+const kopf = (t, u) => `<div class="kopf"><div class="logo">${logoSvg}</div><h1>${t}</h1><div class="sub">${u}</div></div>`;
+const karte = (inner, titel) => `<div class="karte">${titel ? `<h2>${titel}</h2>` : ''}${inner}</div>`;
+const chip = (t, cls) => `<span class="chip ${cls}">${t}</span>`;
+const typChip = typ => chip(TYP[typ], typ);
+
+function render() {
+  document.documentElement.dataset.theme = S().darstellung === 'system' ? (matchMedia('(prefers-color-scheme: light)').matches ? 'hell' : 'dunkel') : S().darstellung;
+  const v = { rechner: viewRechner, protokoll: viewProtokoll, import: viewImport, verdienst: viewVerdienst, statistik: viewStatistik }[UI.tab] || viewRechner;
+  $('view').innerHTML = v();
+  renderTabs();
+  if (UI.tab === 'verdienst') chartsVerdienst(); if (UI.tab === 'statistik') chartsStatistik();
+  Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue('--txt2').trim();
+  Chart.defaults.font.family = 'Arial'; Chart.defaults.font.size = 11;
+}
+function go(tab) { UI.tab = tab; localStorage.setItem('zeiterfassung.tab', tab); window.scrollTo(0, 0); render(); }
+function renderTabs() {
+  const T = [['rechner', 'Erfassen', '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6M12 2v3"/>'], ['protokoll', 'Protokoll', '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 9h10M7 13h10M7 17h6"/>'],
+    ['import', 'Import', '<path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3"/><circle cx="12" cy="12" r="3"/>'],
+    ['verdienst', 'Verdienst', '<circle cx="12" cy="12" r="9"/><path d="M15 9a4 4 0 100 6M8 11h5M8 13h5"/>'], ['statistik', 'Statistik', '<path d="M4 20h16M6 16v-5M10 16V6M14 16v-8M18 16v-3"/>']];
+  $('tabs').innerHTML = T.map(([k, l, p]) => `<button class="${UI.tab === k ? 'on' : ''}" onclick="go('${k}')"><svg viewBox="0 0 24 24">${p}</svg>${l}</button>`).join('');
+}
+
+// ============================================================ Erfassen
+function viewRechner() {
+  const s = S(), l = aktive().find(e => e.laeuft);
+  let h = kopf('Zeiterfassung', 'Rufbereitschaft · TV-Ärzte');
+  if (l) {
+    h += `<div class="ergebnis laeuft"><div><span class="dot rot"></span><span class="b sec small">Einsatz läuft</span></div>
+      <div class="hero mono" id="laufDauer" style="font-size:48px">${Fmt.dauer(dauerMin(l))}</div>
+      <div class="row" style="justify-content:center">${typChip(l.typ)}<span class="small sec">seit ${Fmt.kurz(B(l))}</span></div>
+      <div class="row"><button class="btn grau" onclick="typWechsel('${l.id}')">${l.typ === 'vorort' ? '→ technisch' : '→ vor Ort'}</button>
+      <button class="btn tint" style="--c1:#ff6b66;--c2:#e0453c" onclick="beenden('${l.id}')">■ Beenden</button></div></div>`;
+  } else {
+    h += karte(`<div class="b">Das Telefon klingelt?</div><div class="mini">Einmal tippen – der Einsatz läuft mit. Beenden, sobald du fertig bist; auch Stunden später.</div>
+      <div class="row"><button class="btn tint" style="--c1:#40bfd9;--c2:#2a9db5" onclick="starten('technisch')">☎ Start technisch</button>
+      <button class="btn tint" style="--c1:#ff9e33;--c2:#e6821a" onclick="starten('vorort')">✚ Start vor Ort</button></div>`);
+  }
+  const f = UI.form;
+  h += karte(`<div class="seg"><button class="${f.typ === 'technisch' ? 'on' : ''}" onclick="UI.form.typ='technisch';render()">Technisch (daheim)</button><button class="${f.typ === 'vorort' ? 'on' : ''}" onclick="UI.form.typ='vorort';render()">Vor Ort</button></div>
+    <div class="feld"><label>Beginn</label><input type="datetime-local" value="${f.beginn}" oninput="UI.form.beginn=this.value"><button class="btn rand klein" onclick="UI.form.beginn=toInput(new Date());render()">Jetzt</button></div>
+    <div class="feld"><label>Ende</label><input type="datetime-local" value="${f.ende}" oninput="UI.form.ende=this.value"><button class="btn rand klein" onclick="UI.form.ende=toInput(new Date());render()">Jetzt</button></div>
+    <button class="btn" onclick="speichern()">Einsatz ins Protokoll</button>
+    <div class="mini">Mindestens 3 Minuten werden gezählt; Vor-Ort-Einsätze tariflich auf volle Stunden gerundet. Überschneidungen werden automatisch zusammengeführt, der Rest bleibt ausgeblendet im Protokoll.</div>
+    ${UI.meldung ? `<div class="ok">${esc(UI.meldung)}</div>` : ''}`, 'Nachträglich erfassen');
+  // Vorschau: aktive + Formular
+  const alle = aktive().map(e => e.laeuft ? Object.assign({}, e, { ende: EW(e).toISOString(), laeuft: false }) : e);
+  if (!l) { const b = new Date(f.beginn), e = new Date(f.ende); if (!isNaN(b) && !isNaN(e) && e > b) alle.push({ beginn: b.toISOString(), ende: e.toISOString(), typ: f.typ, aktiv: true }); }
+  const r = Rest.compute(alle, s);
+  if (r) h += ergebnisKarte(r, s);
+  return h;
+}
+function ergebnisKarte(r, s) {
+  const refH = s.refRuheStunden, hyp = r.hypEarliest ? Fmt.zeit(r.hypEarliest) : '–';
+  const verdict = r.ampel === 'rot' ? `Letzte zusammenhängende Ruhe nur ${Fmt.dauer(r.letzteRuheMin)} (unter 5,5 h) — Dienstbeginn verschiebt sich zwingend auf ${Fmt.zeit(r.earliest)} Uhr (letzter Einsatz + ${refH} h). Ausfallzeit ${Fmt.dauer(r.ausfallMin)} gilt als bezahlte Arbeitszeit.`
+    : r.ampel === 'orange' ? `Letzte zusammenhängende Ruhe ${Fmt.dauer(r.letzteRuheMin)} (unter ${refH} h) — regulärer Dienstbeginn (${s.dienstbeginn}) möglich, sofern Ausgleich zu anderen Zeiten erfolgt (Ausgleichsanspruch ${Fmt.dauer(r.ausgleichMin)}). Ohne Ausgleich müsste der Dienstbeginn auf ${hyp} Uhr verschoben werden.`
+    : `Letzte zusammenhängende Ruhe ${Fmt.dauer(r.letzteRuheMin)} ≥ ${refH} h — regulärer Dienstbeginn (${s.dienstbeginn}). Keine Meldung nötig.`;
+  const z = (k, v) => `<div class="zeile"><span>${k}</span><span class="mono">${v}</span></div>`;
+  let melden = '';
+  if (r.ampel !== 'gruen') melden = `<button class="btn tint" style="--c1:${r.ampel === 'rot' ? '#ff453a;--c2:#d0342b' : '#ff9500;--c2:#d97c00'}" ${s.empfaenger ? '' : 'disabled'} onclick="melden()">${r.ampel === 'rot' ? 'Verschiebung melden' : 'Verkürzte Ruhezeit melden'}</button>${s.empfaenger ? '' : '<div class="mini">Verteiler in den Einstellungen (Zahnrad) hinterlegen.</div>'}`;
+  return `<div class="ergebnis ${r.ampel}"><div><span class="dot ${r.ampel}"></span><span class="b sec small">Frühester nächster Dienstantritt</span></div>
+    <div class="hero mono">${Fmt.zeit(r.earliest)}</div><div class="small sec">${Fmt.kurz(r.earliest)}</div>
+    <div class="small b ${r.ampel}T">${verdict}</div>${melden}
+    <details><summary>Rechenweg</summary><div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+    ${z('Ruhebeginn (Regelarbeitszeit-Ende)', Fmt.kurz(r.fensterStart))}${z(`Inanspruchnahme gesamt (${r.nachtEinsaetze.length})`, Fmt.dauer(r.einsatzMin))}${z('Ruhe gesamt (alle Lücken, Info)', Fmt.dauer(r.nettoRuheMin))}<hr>
+    ${z('Letzter Einsatz endet', Fmt.kurz(r.lastEnde))}${z('Letzte zusammenhängende Ruhe · entscheidend', Fmt.dauer(r.letzteRuheMin))}
+    ${r.ampel === 'rot' ? z(`+ ${refH} h ununterbrochen`, Fmt.kurz(r.earliest)) : ''}${z('Regulärer Dienstbeginn', Fmt.kurz(r.regulaer))}
+    ${r.ampel === 'orange' ? z('Ausgleichsanspruch', Fmt.dauer(r.ausgleichMin)) + z('Hypothetisch ohne Ausgleich', r.hypEarliest ? Fmt.kurz(r.hypEarliest) : '–') : ''}
+    ${r.ampel === 'rot' ? z('Ausfallzeit (bezahlt)', Fmt.dauer(r.ausfallMin)) : ''}</div></details></div>`;
+}
+function melden() { const r = Rest.compute(aktive(), S()); if (!r) return; const m = Mail.meldung(r, S()); if (m) Mail.oeffne(S().empfaenger, S().mail, m.betreff, m.text); }
+function starten(typ) { const j = new Date(); const e = { id: uid(), beginn: j.toISOString(), ende: addMin(j, 3).toISOString(), typ, quelle: 'manuell', aktiv: true, laeuft: true, hinweis: '' };
+  DB.einsaetze.push(e); RB.ergaenzeTag(e, S()); save(); render(); }
+function typWechsel(id) { const e = DB.einsaetze.find(x => x.id === id); if (!e) return; e.typ = e.typ === 'vorort' ? 'technisch' : 'vorort'; save(); render(); }
+function beenden(id) {
+  const l = DB.einsaetze.find(x => x.id === id); if (!l) return;
+  const ende = new Date(Math.max(Date.now(), B(l).getTime() + 3 * 60000)); l.ende = ende.toISOString(); l.laeuft = false;
+  const k = RB.kollision(B(l), ende, l.id);
+  if (k) { const kb = new Date(Math.min(B(k), B(l))), ke = new Date(Math.max(EW(k), ende)); k.beginn = kb.toISOString(); k.ende = ke.toISOString(); if (l.typ === 'vorort') k.typ = 'vorort';
+    l.aktiv = false; l.hinweis = `in ${Fmt.kurz(kb)}–${Fmt.zeit(ke)} aufgegangen`; UI.meldung = `Beendet und mit ${Fmt.zeit(kb)}–${Fmt.zeit(ke)} zusammengeführt.`; }
+  else UI.meldung = `Einsatz beendet ✓ (${Fmt.dauer(dauerMin(l))})`;
+  save(); render(); setTimeout(() => { UI.meldung = ''; if (UI.tab === 'rechner') render(); }, 4000);
+}
+function speichern() {
+  const f = UI.form, b = new Date(f.beginn); let e = new Date(f.ende); if (isNaN(b) || isNaN(e)) return;
+  const minE = addMin(b, 3); if (e < minE) e = minE;
+  const erg = RB.einfuegen(b, e, f.typ, 'manuell'); let m;
+  if (erg.art === 'neu') { m = `Einsatz gespeichert ✓ (${Fmt.dauer(dauerMin(erg.neu))})`; const t = RB.ergaenzeTag(erg.neu, S()); if (t) m += ` · Rufbereitschaftstag ${Fmt.kurz(new Date(t.beginn))}–${Fmt.zeit(new Date(t.ende))} automatisch ergänzt`; }
+  else m = `Überschneidung → zusammengeführt zu ${Fmt.kurz(B(erg.k))}–${Fmt.zeit(E(erg.k))}. Der Einzeleintrag bleibt ausgeblendet im Protokoll (dort per Tipp wieder verwendbar).`;
+  UI.form.ende = toInput(e); UI.meldung = m; save(); render(); setTimeout(() => { UI.meldung = ''; if (UI.tab === 'rechner') render(); }, 5000);
+}
+setInterval(() => { const el = $('laufDauer'); const l = aktive().find(e => e.laeuft); if (el && l) el.textContent = Fmt.dauer(dauerMin(l)); }, 30000);
+
+// ============================================================ Protokoll
+function viewProtokoll() {
+  const s = S(); let h = kopf('Protokoll', 'Einsätze und Bereitschaftstage nach Monat');
+  const f = RB.fensterAnTag(new Date(UI.neuerTag + 'T12:00'), s), dub = RB.istDublette(f.beginn);
+  h += karte(`<details><summary>＋ Rufbereitschaftstag hinzufügen</summary><div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
+    <div class="feld"><label>Datum</label><input type="date" value="${UI.neuerTag}" onchange="UI.neuerTag=this.value;render()"></div>
+    <button class="btn tint" style="--c1:#5c94ff;--c2:#3d6fd9" ${dub ? 'disabled' : ''} onclick="tagHinzu()">${Fmt.zeit(f.beginn)} → ${Fmt.zeit(f.ende)} am Folgetag eintragen</button>
+    ${dub ? '<div class="warn">Dieser Tag ist bereits erfasst.</div>' : ''}
+    <div class="mini">Werktags ${s.dienstende}–${s.dienstbeginn}, Sa/So/Feiertag 08:00–08:00. Die Pauschale fällt auch ohne Anruf an; beim Speichern eines Einsatzes wird der Tag automatisch ergänzt.</div></div></details>`);
+  const map = {};
+  for (const e of DB.einsaetze) { const k = monatStart(B(e)).getTime(); (map[k] = map[k] || { e: [], t: [] }).e.push(e); }
+  for (const t of DB.tage) { const k = monatStart(new Date(t.beginn)).getTime(); (map[k] = map[k] || { e: [], t: [] }).t.push(t); }
+  const keys = Object.keys(map).map(Number).sort((a, b) => b - a);
+  if (!keys.length) h += karte('<div class="sec">Noch keine Einträge.<br>Einsätze unter „Erfassen" starten oder ein Dienstplan-Foto importieren.</div>');
+  for (const k of keys) {
+    const m = map[k], es = m.e.sort((a, b) => B(b) - B(a)), ts = m.t.sort((a, b) => a.beginn < b.beginn ? 1 : -1), akt = es.filter(e => e.aktiv !== false);
+    const v = Verdienst.monat(new Date(k), s), dauer = Rest.merged(akt.map(e => [B(e), EW(e)])), aus = es.length - akt.length;
+    let inner = `<div><div class="b">${Fmt.monat(new Date(k))}</div><div class="mini">${akt.length} Einsätze · ${Fmt.dauer(dauer)} · ${ts.length} Bereitschaftstage${aus ? ` · ${aus} ausgeblendet` : ''}</div><div class="mini tert">brutto ≈ ${Fmt.euro(v.gesamt)}</div></div>`;
+    inner += es.map((e, i) => einsatzZeile(e, akt, s) + (i < es.length - 1 ? '<hr>' : '')).join('');
+    if (ts.length) inner += '<hr>' + ts.map(t => { const p = Verdienst.pauschale(t, s); return `<div class="tag" oncontextmenu="return false"><span class="m">☾</span><span class="mono">${Fmt.kurz(new Date(t.beginn))}–${Fmt.zeit(new Date(t.ende))}</span><span class="mini">${p.detail.split(' · ')[0]}</span><span style="flex:1"></span><span class="mini tert mono">${Fmt.euro(Verdienst.summe(p.b))}</span><button class="btn rand klein" onclick="tagLoeschen('${t.id}')">✕</button></div>`; }).join('');
+    h += karte(inner);
+  }
+  if (DB.einsaetze.length) h += karte(`<button class="btn" ${s.mail ? '' : 'disabled'} onclick="Mail.oeffne(S().mail,'', 'Rufbereitschaft-Einsatzprotokoll', Mail.protokoll(S()))">✉ Liste per Mail an mich</button>
+    <div class="row"><button class="btn rand" onclick="kopieren()">${UI.kopiert ? 'Kopiert ✓' : 'Kopieren'}</button><button class="btn rand" style="color:var(--zuschlag)" onclick="allesLoeschen()">Leeren</button></div>
+    <div class="mini">Der Ausgleichs-/Verschiebungshinweis der aktuellen Nacht wird vorsorglich immer mit protokolliert. Ausgeblendete Einträge sind nicht enthalten.</div>`, 'Export');
+  return h;
+}
+function einsatzZeile(e, akt, s) {
+  if (e.aktiv === false) return `<div class="ausgeblendet" onclick="aktivieren('${e.id}')"><span>⊘</span><div style="flex:1"><div class="t mono">${Fmt.kurz(B(e))}–${Fmt.zeit(E(e))} · ${TYP[e.typ]}</div><div class="u">Nicht verwendet${e.hinweis ? ' – ' + esc(e.hinweis) : ''} · tippen zum Verwenden</div></div><span style="color:var(--pauschale);font-size:20px">↺</span><button class="btn rand klein" onclick="event.stopPropagation();loeschen('${e.id}')">✕</button></div>`;
+  const p = Verdienst.inanspruchnahme(e, s), bew = Verdienst.bewertet(e), koll = RB.kollision(B(e), EW(e), e.id);
+  return `<div class="eintrag"><div class="kopfz"><span class="mono">${Fmt.kurz(B(e))}–${e.laeuft ? 'läuft' : Fmt.zeit(E(e))}</span><span class="mini tert mono">${Fmt.euro(Verdienst.summe(p.b))}</span></div>
+    <div class="meta">${typChip(e.typ)}<span>${Fmt.dauer(dauerMin(e))}</span>${e.laeuft ? chip('läuft', 'rot') : ''}${koll ? chip('Überschneidung', 'rot') : ''}${e.typ === 'vorort' && bew !== dauerMin(e) ? `<span class="tert">→ ${Fmt.dauer(bew)} gezählt</span>` : ''}${e.quelle === 'foto' ? '<span>📷</span>' : ''}
+    <span style="flex:1"></span><button class="btn rand klein" title="Ausblenden" onclick="ausblenden('${e.id}')">⊘</button><button class="btn rand klein" onclick="loeschen('${e.id}')">✕</button></div>
+    <div class="mini tert">${Verdienst.zerlegung(p.b)}</div></div>`;
+}
+function tagHinzu() { const s = S(), f = RB.fensterAnTag(new Date(UI.neuerTag + 'T12:00'), s); if (RB.istDublette(f.beginn)) return; DB.tage.push({ id: uid(), beginn: f.beginn.toISOString(), ende: f.ende.toISOString(), quelle: 'manuell' }); save(); render(); }
+function tagLoeschen(id) { if (!confirm('Bereitschaftstag löschen?')) return; DB.tage = DB.tage.filter(t => t.id !== id); save(); render(); }
+function loeschen(id) { if (!confirm('Einsatz löschen?')) return; DB.einsaetze = DB.einsaetze.filter(e => e.id !== id); save(); render(); }
+function ausblenden(id) { const e = DB.einsaetze.find(x => x.id === id); if (e) { e.aktiv = false; e.hinweis = 'manuell ausgeblendet'; save(); render(); } }
+function aktivieren(id) { const e = DB.einsaetze.find(x => x.id === id); if (e) { e.aktiv = true; e.hinweis = ''; save(); render(); } }
+function kopieren() { navigator.clipboard.writeText(Mail.protokoll(S())).then(() => { UI.kopiert = true; render(); }); }
+function allesLoeschen() { if (!confirm('Wirklich alle Einträge löschen?')) return; DB.einsaetze = []; DB.tage = []; save(); render(); }
+
+// ============================================================ Verdienst
+function viewVerdienst() {
+  const s = S(), m = UI.verdienstMonat, v = Verdienst.monat(m, s), se = Entgelttabelle.stundenentgelt(s.entgeltgruppe, s.stufe, m);
+  let h = kopf('Verdienst', 'Brutto aus Rufbereitschaft · TV-Ärzte/TdL');
+  h += karte(`<div class="nav"><button onclick="UI.verdienstMonat=addMonths(UI.verdienstMonat,-1);render()">‹</button><span class="b">${Fmt.monat(m)}</span><button onclick="UI.verdienstMonat=addMonths(UI.verdienstMonat,1);render()">›</button></div>
+    <div class="hero mono" style="font-size:44px">${Fmt.euro(v.gesamt)}</div><div class="small sec">${s.entgeltgruppe} Stufe ${s.stufe} · Stundenentgelt ${Fmt.euro(se)}</div><div class="mini tert">Tabelle ${Entgelttabelle.tabelle(m).bez}</div>
+    <div class="row"><div class="kachel p gross"><div class="n">${v.pauschalen.length}</div><div class="l">Bereitschaftstage</div><div class="e">${Fmt.euro(v.pauschalenSumme)}</div></div><div class="kachel g gross"><div class="n">${v.einsaetze.length}</div><div class="l">Einsätze</div><div class="e">${Fmt.euro(v.einsatzSumme)}</div></div></div>`);
+  const seg = segmente(v.bausteine);
+  if (seg.length) h += karte(`<div class="grafik" style="height:200px"><canvas id="cDonut"></canvas><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none"><div class="b" style="font-size:18px">${Fmt.euro(v.gesamt)}</div><div class="mini">gesamt</div></div></div>
+    <div class="legende">${seg.map(x => `<div><span class="sw" style="background:${x.f}"></span><span class="sp">${x.n}</span><span class="b mono">${Fmt.euro(x.b)}</span></div>`).join('')}</div><hr>
+    <div class="balken">${seg.map(x => `<div style="flex:${x.b};background:${x.f}"></div>`).join('')}</div><div class="row">${seg.map(x => `<div class="mini" style="color:${x.f}">${Math.round(100 * x.b / v.gesamt)} %</div>`).join('')}</div>`, 'So setzt sich der Lohn zusammen');
+  const vs = verlauf12(m, s), sum = vs.reduce((a, x) => a + Verdienst.summe(x.b), 0);
+  h += karte(sum > 0 ? `<div class="grafik" style="height:220px"><canvas id="cVerlauf"></canvas></div><div class="small b mono">Summe 12 Monate: ${Fmt.euro(sum)}</div>` : '<div class="small sec">Noch keine Dienste in diesem Zeitraum.</div>', 'Verlauf der letzten 12 Monate');
+  const liste = (t, ps) => karte(ps.map((p, i) => `<div class="eintrag"><div class="kopfz"><span class="b mono">${Fmt.kurz(p.datum)}</span><span class="b mono">${Fmt.euro(Verdienst.summe(p.b))}</span></div><div class="small sec">${p.detail}</div><div class="mini sec">${Verdienst.zerlegung(p.b)}</div></div>${i < ps.length - 1 ? '<hr>' : ''}`).join(''), t);
+  if (v.pauschalen.length) h += liste('Rufbereitschaft-Pauschalen', v.pauschalen);
+  if (v.einsaetze.length) h += liste('Inanspruchnahmen', v.einsaetze);
+  if (!v.pauschalen.length && !v.einsaetze.length) h += karte('<div class="sec">Keine Dienste in diesem Monat</div>');
+  h += `<div class="mini" style="padding:0 8px">Berechnung nach §8/§9 TV-Ärzte/TdL. Entgelttabellen 40 h (Marburger Bund, Tarifrunde 2026): je Dienstdatum automatisch die gültige Tabelle. Stundenentgelt = Monatsentgelt ÷ ${Entgelttabelle.divisor.toFixed(2).replace('.', ',')}. Feiertage ${s.bundesland}. Orientierungswert vor Steuern – maßgeblich ist die Abrechnung des Arbeitgebers.</div>`;
+  return h;
+}
+const C = { pauschale: '#5c94ff', grund: '#33cc8f', ueberstd: '#ffb840', zuschlag: '#ff6b66', technisch: '#40bfd9', vorort: '#ff9e33' };
+function segmente(b) { return [['Pauschalen', b.pauschale, C.pauschale], ['Grundentgelt Einsätze', b.grund, C.grund], ['Überstundenzuschlag 15 %', b.ueberstd, C.ueberstd], ['Zeitzuschläge (Nacht/So/Feiertag)', b.zuschlag, C.zuschlag]].filter(x => x[1] > .005).map(x => ({ n: x[0], b: x[1], f: x[2] })); }
+function verlauf12(m, s) { const out = []; for (let o = -11; o <= 0; o++) { const mm = addMonths(m, o); out.push({ m: mm, b: Verdienst.monat(mm, s).bausteine }); } return out; }
+function chartsVerdienst() {
+  const s = S(), v = Verdienst.monat(UI.verdienstMonat, s), seg = segmente(v.bausteine);
+  if (seg.length) chart('cDonut', { type: 'doughnut', data: { labels: seg.map(x => x.n), datasets: [{ data: seg.map(x => x.b), backgroundColor: seg.map(x => x.f), borderWidth: 2, borderColor: 'rgba(0,0,0,0)', borderRadius: 4 }] }, options: { cutout: '62%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + Fmt.euro(c.parsed) } } }, maintainAspectRatio: false } });
+  const vs = verlauf12(UI.verdienstMonat, s);
+  if (vs.some(x => Verdienst.summe(x.b) > 0)) chart('cVerlauf', { type: 'bar', data: { labels: vs.map(x => MONK[x.m.getMonth()]), datasets: [
+    { label: 'Pauschalen', data: vs.map(x => x.b.pauschale), backgroundColor: C.pauschale }, { label: 'Grundentgelt', data: vs.map(x => x.b.grund), backgroundColor: C.grund },
+    { label: 'ÜS 15 %', data: vs.map(x => x.b.ueberstd), backgroundColor: C.ueberstd }, { label: 'Zeitzuschläge', data: vs.map(x => x.b.zuschlag), backgroundColor: C.zuschlag }] },
+    options: barOpts({ stacked: true, y: x => x >= 1000 ? (x / 1000).toFixed(1) + 'k' : x, tip: c => ` ${c.dataset.label}: ${Fmt.euro(c.parsed.y)}` }) });
+}
+function barOpts(o) {
+  return { maintainAspectRatio: false, animation: { duration: 250 }, scales: { x: { stacked: !!o.stacked, grid: { display: false }, ticks: o.xt || {} }, y: { stacked: !!o.stacked, beginAtZero: true, grid: { color: 'rgba(128,128,128,.18)' }, ticks: { callback: o.y || (x => x), precision: 0 } } },
+    plugins: { legend: { display: o.legend !== false, position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 8, padding: 14 } }, tooltip: { enabled: o.tip !== false, callbacks: o.tip ? { label: o.tip } : {} } }, onClick: o.onClick, borderRadius: 3 };
+}
+
+// ============================================================ Statistik
+function statBasis() {
+  const m = UI.statMonat, mv = monatStart(m), mb = addMonths(mv, 1), jv = new Date(m.getFullYear(), 0, 1), jb = new Date(m.getFullYear() + 1, 0, 1);
+  const von = UI.zeitraum === 'monat' ? mv : jv, bis = UI.zeitraum === 'monat' ? mb : jb;
+  return { mv, mb, jv, jb, von, bis, jahr: m.getFullYear(), auswahl: aktive().filter(e => B(e) >= von && B(e) < bis) };
+}
+function statistik(von, bis) {
+  const es = aktive().filter(e => B(e) >= von && B(e) < bis), ts = DB.tage.filter(t => new Date(t.beginn) >= von && new Date(t.beginn) < bis);
+  const s = { technisch: 0, vorOrt: 0, tMin: 0, vMin: 0, tage: ts.length, mitAnruf: 0, laengster: 0 };
+  for (const e of es) { const d = dauerMin(e); if (e.typ === 'technisch') { s.technisch++; s.tMin += d; } else { s.vorOrt++; s.vMin += d; } s.laengster = Math.max(s.laengster, d); }
+  s.mitAnruf = ts.filter(t => es.some(e => B(e) >= new Date(t.beginn) && B(e) < new Date(t.ende))).length;
+  s.oeT = s.technisch ? s.tMin / s.technisch : 0; s.oeV = s.vorOrt ? s.vMin / s.vorOrt : 0; s.jeNacht = s.tage ? (s.technisch + s.vorOrt) / s.tage : 0; s.ruhig = Math.max(0, s.tage - s.mitAnruf); s.gesamt = s.tMin + s.vMin;
+  return s;
+}
+const auswahlZeile = (id, text, hinweis = 'Balken antippen für Details') => `<div class="auswahl ${text ? 'on' : ''}" id="${id}">${text ? '▤ ' + text : '☝ ' + hinweis}</div>`;
+function naechte() { const { mv, mb } = statBasis(); return DB.tage.filter(t => new Date(t.beginn) >= mv && new Date(t.beginn) < mb).sort((a, b) => a.beginn < b.beginn ? -1 : 1).map(t => {
+  const n = { nacht: sod(new Date(t.beginn)), technisch: 0, vorOrt: 0, tMin: 0, vMin: 0 };
+  for (const e of aktive()) if (B(e) >= new Date(t.beginn) && B(e) < new Date(t.ende)) { if (e.typ === 'technisch') { n.technisch++; n.tMin += dauerMin(e); } else { n.vorOrt++; n.vMin += dauerMin(e); } }
+  n.anzahl = n.technisch + n.vorOrt; n.gesamt = n.tMin + n.vMin; return n; }); }
+function jahresMonate() { const { jv } = statBasis(); return Array.from({ length: 12 }, (_, i) => { const m = addMonths(jv, i), b = addMonths(m, 1), n = { monat: m, technisch: 0, vorOrt: 0, tMin: 0, vMin: 0, tage: 0 };
+  for (const e of aktive()) if (B(e) >= m && B(e) < b) { if (e.typ === 'technisch') { n.technisch++; n.tMin += dauerMin(e); } else { n.vorOrt++; n.vMin += dauerMin(e); } }
+  n.tage = DB.tage.filter(t => new Date(t.beginn) >= m && new Date(t.beginn) < b).length; n.anzahl = n.technisch + n.vorOrt; n.gesamt = n.tMin + n.vMin; return n; }); }
+const zelle = (n, min, fett) => n === 0 ? '<span class="sec">–</span>' : `<span class="${fett ? 'b' : ''} mono">${n}</span><span class="d mono">${Fmt.dauer(min)}</span>`;
+function viewStatistik() {
+  const sb = statBasis(), a = sb.auswahl, sel = UI.sel;
+  let h = kopf('Statistik', 'Wann klingelt das Telefon – und wie viel?');
+  h += karte(`<div class="nav"><button onclick="UI.statMonat=addMonths(UI.statMonat,-1);UI.sel={};render()">‹</button><span class="b">${Fmt.monat(UI.statMonat)}</span><button onclick="UI.statMonat=addMonths(UI.statMonat,1);UI.sel={};render()">›</button></div>
+    <div class="seg"><button class="${UI.zeitraum === 'monat' ? 'on' : ''}" onclick="UI.zeitraum='monat';UI.sel={};render()">Monat</button><button class="${UI.zeitraum === 'jahr' ? 'on' : ''}" onclick="UI.zeitraum='jahr';UI.sel={};render()">Jahr ${sb.jahr}</button></div>
+    <div class="mini">Uhrzeit, Wochentag und Dauer beziehen sich auf: ${UI.zeitraum === 'monat' ? Fmt.monat(UI.statMonat) : 'Jahr ' + sb.jahr}</div>
+    <div class="row"><div class="kachel g"><div class="n">${a.length}</div><div class="l">Einsätze</div></div><div class="kachel t"><div class="n">${a.filter(e => e.typ === 'technisch').length}</div><div class="l">technisch</div></div><div class="kachel v"><div class="n">${a.filter(e => e.typ === 'vorort').length}</div><div class="l">vor Ort</div></div><div class="kachel p"><div class="n">${(a.reduce((x, e) => x + dauerMin(e), 0) / 60).toFixed(1)}</div><div class="l">Stunden</div></div></div>`);
+  const m = statistik(sb.mv, sb.mb), j = statistik(sb.jv, sb.jb);
+  const z = (k, a1, b1, c) => `<tr><td>${c ? `<span class="dot" style="width:8px;height:8px;background:${c};box-shadow:none"></span>` : ''}<span class="${k.startsWith(' ') ? 'sec' : ''}">${k}</span></td><td class="b mono nw">${a1}</td><td class="sec mono nw">${b1}</td></tr>`;
+  h += karte(`<table><tr><th></th><th>${Fmt.monat(UI.statMonat)}</th><th>Jahr ${sb.jahr}</th></tr>
+    ${z('Technische Einsätze (daheim)', m.technisch, j.technisch, C.technisch)}${z(' Ø Dauer', Fmt.dauer(m.oeT), Fmt.dauer(j.oeT))}${z(' gesamt', Fmt.dauer(m.tMin), Fmt.dauer(j.tMin))}
+    ${z('Einsätze vor Ort', m.vorOrt, j.vorOrt, C.vorort)}${z(' Ø Dauer', Fmt.dauer(m.oeV), Fmt.dauer(j.oeV))}${z(' gesamt', Fmt.dauer(m.vMin), Fmt.dauer(j.vMin))}${z('Einsatzzeit gesamt', Fmt.dauer(m.gesamt), Fmt.dauer(j.gesamt), C.grund)}
+    <tr><td colspan="3"><hr></td></tr>${z('Bereitschaftstage', m.tage, j.tage, C.pauschale)}${z('Nächte mit Anruf', m.mitAnruf, j.mitAnruf)}${z('Nächte ohne Anruf', m.ruhig, j.ruhig)}${z('Ø Einsätze je Nacht', m.jeNacht.toFixed(1), j.jeNacht.toFixed(1))}${z('Längster Einsatz', Fmt.dauer(m.laengster), Fmt.dauer(j.laengster))}</table>`, 'Kennzahlen');
+  // Uhrzeit
+  const sw = stundenWerte(a), sumS = sw.t.reduce((x, y) => x + y, 0) + sw.v.reduce((x, y) => x + y, 0);
+  h += karte(`<div class="seg"><button class="${UI.masz === 'anrufe' ? 'on' : ''}" onclick="UI.masz='anrufe';render()">Anrufe</button><button class="${UI.masz === 'minuten' ? 'on' : ''}" onclick="UI.masz='minuten';render()">Minuten</button></div>
+    <div class="mini">${UI.masz === 'anrufe' ? 'Zu welcher Uhrzeit das Telefon klingelt (Beginn der Einsätze)' : 'Wie viele Einsatzminuten in welche Stunde fallen (Aufkommen)'}</div>
+    ${sumS > 0 ? auswahlZeile('aStunde', stundeText(sw, sel.stunde)) + '<div class="grafik" style="height:210px"><canvas id="cStunde"></canvas></div>' + spitzeText(sw) : '<div class="small sec">Keine Einsätze im Zeitraum.</div>'}`, 'Nach Uhrzeit');
+  // Wochentag
+  const ww = wochentagWerte(a);
+  h += karte(ww.t.some(x => x) || ww.v.some(x => x) ? auswahlZeile('aWtag', wtagText(ww, sel.wtag)) + '<div class="grafik" style="height:190px"><canvas id="cWtag"></canvas></div>' : '<div class="small sec">Keine Einsätze im Zeitraum.</div>', 'Nach Wochentag');
+  // Tag für Tag
+  const ns = naechte();
+  if (!ns.length) h += karte('<div class="small sec">Keine Bereitschaftstage in diesem Monat.</div>', 'Tag für Tag · ' + Fmt.monat(UI.statMonat));
+  else { const g = sel.nacht != null ? ns[sel.nacht] : null;
+    const sumT = ns.reduce((x, n) => x + n.technisch, 0), sumV = ns.reduce((x, n) => x + n.vorOrt, 0), minT = ns.reduce((x, n) => x + n.tMin, 0), minV = ns.reduce((x, n) => x + n.vMin, 0);
+    h += karte(`<div class="mini">Anrufe je Bereitschaftsnacht – Lücken sind ruhige Nächte</div>${auswahlZeile('aNacht', nachtText(g), 'Nacht antippen für Details')}<div class="grafik" style="height:180px"><canvas id="cNacht"></canvas></div><hr>
+      <table><tr><th>Nacht</th><th style="color:${C.technisch}">technisch</th><th style="color:${C.vorort}">vor Ort</th><th>gesamt</th></tr>
+      ${ns.map((n, i) => `<tr class="${sel.nacht === i ? 'hv' : ''}" onclick="selNacht(${i})"><td class="${sel.nacht === i ? 'b' : ''}">${Fmt.tag(n.nacht)}</td><td>${zelle(n.technisch, n.tMin)}</td><td>${zelle(n.vorOrt, n.vMin)}</td><td class="b mono ${n.anzahl ? '' : 'sec'}">${n.anzahl ? Fmt.dauer(n.gesamt) : 'ruhig'}</td></tr>`).join('')}
+      <tr class="sum"><td>Summe</td><td>${zelle(sumT, minT, true)}</td><td>${zelle(sumV, minV, true)}</td><td class="mono">${Fmt.dauer(minT + minV)}</td></tr></table>`, 'Tag für Tag · ' + Fmt.monat(UI.statMonat)); }
+  // Dauer
+  const dw = dauerWerte(a);
+  if (a.length) { const mittel = a.reduce((x, e) => x + dauerMin(e), 0) / a.length, srt = a.map(dauerMin).sort((x, y) => x - y), med = srt[Math.floor(a.length / 2)] || 0;
+    h += karte(auswahlZeile('aDauer', dauerText(dw, sel.dauer)) + `<div class="grafik" style="height:190px"><canvas id="cDauer"></canvas></div><div class="small b">Ø ${Fmt.dauer(mittel)} · Median ${Fmt.dauer(med)}</div>`, 'Dauer der Einsätze'); }
+  else h += karte('<div class="small sec">Keine Einsätze im Zeitraum.</div>', 'Dauer der Einsätze');
+  // Jahr
+  const ms = jahresMonate(), sT = ms.reduce((x, n) => x + n.technisch, 0), sV = ms.reduce((x, n) => x + n.vorOrt, 0), mT = ms.reduce((x, n) => x + n.tMin, 0), mV = ms.reduce((x, n) => x + n.vMin, 0), sTage = ms.reduce((x, n) => x + n.tage, 0);
+  if (sT + sV === 0) h += karte(`<div class="small sec">Noch keine Einsätze im Jahr ${sb.jahr}.</div>`, 'Jahresverlauf ' + sb.jahr);
+  else { const g = sel.monat != null ? ms[sel.monat] : null;
+    h += karte(`<div class="seg"><button class="${UI.jahrMasz === 'anzahl' ? 'on' : ''}" onclick="UI.jahrMasz='anzahl';render()">Einsätze</button><button class="${UI.jahrMasz === 'stunden' ? 'on' : ''}" onclick="UI.jahrMasz='stunden';render()">Stunden</button></div>
+      ${auswahlZeile('aMonat', monatText(g), 'Monat antippen für Details')}<div class="grafik" style="height:190px"><canvas id="cJahr"></canvas></div><hr>
+      <table><tr><th>Monat</th><th style="color:${C.technisch}">technisch</th><th style="color:${C.vorort}">vor Ort</th><th>Tage</th></tr>
+      ${ms.map((n, i) => n.anzahl || n.tage ? `<tr class="${sel.monat === i ? 'hv' : ''}" onclick="selMonat(${i})"><td class="${sel.monat === i ? 'b' : ''}">${MONK[n.monat.getMonth()]}</td><td>${zelle(n.technisch, n.tMin)}</td><td>${zelle(n.vorOrt, n.vMin)}</td><td class="mono">${n.tage}</td></tr>` : '').join('')}
+      <tr class="sum"><td>${sb.jahr}</td><td>${zelle(sT, mT, true)}</td><td>${zelle(sV, mV, true)}</td><td class="mono">${sTage}</td></tr></table>
+      <div class="mini">Gesamt ${sT + sV} Einsätze · ${Fmt.dauer(mT + mV)} · ${sTage} Bereitschaftstage</div>`, 'Jahresverlauf ' + sb.jahr); }
+  h += '<div class="mini" style="padding:0 8px">Nur verwendete (nicht ausgeblendete) Einsätze. Tippen auf einen Balken oder eine Tabellenzeile zeigt die Details darüber.</div>';
+  return h;
+}
+function stundenWerte(a) { const t = Array(24).fill(0), v = Array(24).fill(0); for (const e of a) { const arr = e.typ === 'vorort' ? v : t;
+  if (UI.masz === 'anrufe') arr[B(e).getHours()]++; else { let cur = B(e); const ende = EW(e); while (cur < ende) { const h = cur.getHours(); const nx = new Date(cur); nx.setMinutes(0, 0, 0); nx.setHours(h + 1); const next = nx < ende ? nx : ende; arr[h] += (next - cur) / 60000; cur = next; } } } return { t, v }; }
+const fmtM = x => UI.masz === 'anrufe' ? `${Math.round(x)}` : Fmt.dauer(x);
+function stundeText(sw, s) { if (s == null) return null; return `${s}:00–${s + 1}:00 Uhr: ${UI.masz === 'anrufe' ? Math.round(sw.t[s] + sw.v[s]) + ' Anrufe' : Fmt.dauer(sw.t[s] + sw.v[s])} · technisch ${fmtM(sw.t[s])} · vor Ort ${fmtM(sw.v[s])}`; }
+function spitzeText(sw) { const s = sw.t.map((x, i) => x + sw.v[i]), mx = Math.max(...s); if (mx <= 0) return ''; const i = s.indexOf(mx), ges = s.reduce((a, b) => a + b, 0), nacht = s.filter((_, h) => h >= 20 || h < 6).reduce((a, b) => a + b, 0);
+  return `<div class="small b">Spitze: ${i}:00–${i + 1}:00 Uhr (${UI.masz === 'anrufe' ? mx + ' Anrufe' : Fmt.dauer(mx)})</div><div class="mini">Nachtanteil (20–6 Uhr): ${Math.round(100 * nacht / ges)} %</div>`; }
+const WTAGE = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+function wochentagWerte(a) { const t = Array(7).fill(0), v = Array(7).fill(0), tm = Array(7).fill(0), vm = Array(7).fill(0); for (const e of a) { const i = (B(e).getDay() + 6) % 7; if (e.typ === 'vorort') { v[i]++; vm[i] += dauerMin(e); } else { t[i]++; tm[i] += dauerMin(e); } } return { t, v, tm, vm }; }
+function wtagText(w, i) { if (i == null) return null; return `${WTAGE[i]}: ${w.t[i] + w.v[i]} Anrufe · technisch ${w.t[i]} (${Fmt.dauer(w.tm[i])}) · vor Ort ${w.v[i]} (${Fmt.dauer(w.vm[i])})`; }
+function nachtText(n) { if (!n) return null; return n.anzahl === 0 ? `${Fmt.tag(n.nacht)}: ruhige Nacht, kein Anruf` : `${Fmt.tag(n.nacht)}: ${n.anzahl} Einsätze · ${Fmt.dauer(n.gesamt)} · technisch ${n.technisch} (${Fmt.dauer(n.tMin)}) · vor Ort ${n.vorOrt} (${Fmt.dauer(n.vMin)})`; }
+function monatText(n) { if (!n) return null; return `${MON[n.monat.getMonth()]}: ${n.anzahl} Einsätze · ${Fmt.dauer(n.gesamt)} · technisch ${n.technisch} (${Fmt.dauer(n.tMin)}) · vor Ort ${n.vorOrt} (${Fmt.dauer(n.vMin)}) · ${n.tage} Bereitschaftstage`; }
+const DKL = ['< 15 min', '15–30', '30–60', '1–2 h', '> 2 h'];
+function dauerWerte(a) { const kl = m => m < 15 ? 0 : m < 30 ? 1 : m < 60 ? 2 : m < 120 ? 3 : 4, t = Array(5).fill(0), v = Array(5).fill(0); for (const e of a) (e.typ === 'vorort' ? v : t)[kl(dauerMin(e))]++; return { t, v }; }
+function dauerText(w, i) { if (i == null) return null; return `${DKL[i]}: ${w.t[i] + w.v[i]} Einsätze · technisch ${w.t[i]} · vor Ort ${w.v[i]}`; }
+function selNacht(i) { UI.sel.nacht = UI.sel.nacht === i ? null : i; render(); }
+function selMonat(i) { UI.sel.monat = UI.sel.monat === i ? null : i; render(); }
+function dim(color, selIdx, n) { return Array.from({ length: n }, (_, i) => selIdx == null || selIdx === i ? color : color + '55'); }
+function typChart(id, labels, t, v, selKey, textFn, elId, extra) {
+  const sel = UI.sel[selKey], n = labels.length;
+  const c = chart(id, { type: 'bar', data: { labels, datasets: [{ label: 'Technisch', data: t, backgroundColor: dim(C.technisch, sel, n) }, { label: 'Vor Ort', data: v, backgroundColor: dim(C.vorort, sel, n) }] },
+    options: barOpts(Object.assign({ stacked: true, tip: false, onClick: (ev, els, ch) => { const pts = ch.getElementsAtEventForMode(ev, 'index', { intersect: false }, true); if (!pts.length) return; const i = pts[0].index;
+      UI.sel[selKey] = UI.sel[selKey] === i ? null : i; const s2 = UI.sel[selKey]; ch.data.datasets[0].backgroundColor = dim(C.technisch, s2, n); ch.data.datasets[1].backgroundColor = dim(C.vorort, s2, n); ch.update();
+      const el = $(elId); const txt = textFn(s2); if (el) { el.className = 'auswahl' + (txt ? ' on' : ''); el.textContent = txt ? '▤ ' + txt : '☝ Balken antippen für Details'; } if (extra) extra(s2); } }, extra ? {} : {})) });
+  return c;
+}
+function chartsStatistik() {
+  const sb = statBasis(), a = sb.auswahl;
+  const sw = stundenWerte(a); if ($('cStunde')) typChart('cStunde', Array.from({ length: 24 }, (_, i) => i), sw.t, sw.v, 'stunde', s => stundeText(sw, s), 'aStunde');
+  if (charts.cStunde) { charts.cStunde.options.scales.x.ticks = { callback: (v, i) => i % 3 === 0 ? i + ' h' : '', maxRotation: 0, autoSkip: false }; charts.cStunde.options.scales.y.ticks.callback = x => UI.masz === 'anrufe' ? x : x + ' min'; charts.cStunde.update(); }
+  const ww = wochentagWerte(a); if ($('cWtag')) typChart('cWtag', WTAGE, ww.t, ww.v, 'wtag', i => wtagText(ww, i), 'aWtag');
+  const ns = naechte(); if ($('cNacht')) { const c = typChart('cNacht', ns.map(n => n.nacht.getDate() + '.'), ns.map(n => n.technisch), ns.map(n => n.vorOrt), 'nacht', i => nachtText(ns[i]), 'aNacht', () => render()); }
+  const dw = dauerWerte(a); if ($('cDauer')) typChart('cDauer', DKL, dw.t, dw.v, 'dauer', i => dauerText(dw, i), 'aDauer');
+  const ms = jahresMonate(); if ($('cJahr')) { const st = UI.jahrMasz === 'stunden'; typChart('cJahr', ms.map(n => MONK[n.monat.getMonth()][0]), ms.map(n => st ? n.tMin / 60 : n.technisch), ms.map(n => st ? n.vMin / 60 : n.vorOrt), 'monat', i => monatText(ms[i]), 'aMonat', () => render());
+    if (charts.cJahr && st) { charts.cJahr.options.scales.y.ticks.callback = x => x + ' h'; charts.cJahr.update(); } }
+}
+
+// ============================================================ Foto-Import (Tesseract.js) + Parser
+const Parser = {
+  zeitRe: /(\d{1,2})[:.]?(\d{2})\s*(\+\s*1)?\s*[-–]\s*(\d{1,2})[:.]?(\d{2})\s*(\+\s*1)?/,
+  tagInline: /^(mo|di|mi|do|fr|sa|so)\.?\s*(\d{1,2})$/i, nurWtag: /^(mo|di|mi|do|fr|sa|so)\.?$/i, nurZahl: /^(\d{1,2})$/,
+  monatRe: /\b(jan|feb|m[aä]r|apr|mai|jun|jul|aug|sep|okt|nov|dez)\w*\s+(20\d{2})\b/i,
+  monatMap: { jan: 1, feb: 2, mar: 3, 'mär': 3, apr: 4, mai: 5, jun: 6, jul: 7, aug: 8, sep: 9, okt: 10, nov: 11, dez: 12 },
+  wtagIdx: { so: 1, mo: 2, di: 3, mi: 4, do: 5, fr: 6, sa: 7 },
+  normalisiere(s) { let t = s.toLowerCase(); for (const [a, b] of [['r3', 'rb'], ['rß', 'rb'], ['r8', 'rb'], ['fla', 'fza'], ['f2a', 'fza'], ['fz4', 'fza'], ['tea', 'fza'], ['*ae', 'ae'], ['•ae', 'ae'], ['"ae', 'ae'], ['* ae', 'ae'], ['af ', 'ae '], ['ae n ', 'ae in '], ['ae ln ', 'ae in '], ['rufberelt', 'rufbereit'], ['rufbereltschaft', 'rufbereitschaft'], ['rutbereit', 'rufbereit'], ['rufbereitschft', 'rufbereitschaft'], ['bereitschft', 'bereitschaft'], ['lechn', 'techn'], ['tecnn', 'techn']]) t = t.split(a).join(b); return t; },
+  saeubere(s) { let t = s; for (const [a, b] of [['+l', '+1'], ['+I', '+1'], ['+ 1', '+1'], ['(+1)', '+1']]) t = t.split(a).join(b); return t.replace(/(\d{1,2}[:.]\d{2})41\b/g, '$1+1'); },
+  klassifiziere(z) { const s = this.normalisiere(z); if (s.includes('rufbereit') || s.includes('bereitschaft.tvl')) return 'rufbereitschaft'; if (s.includes('techn')) return 'technisch';
+    const ae = s.includes('ae in') || s.includes('ae ') || s.startsWith('ae') || s.includes(' ae'); if (ae && (s.includes('rb') || s.includes('fza') || s.includes('ohne'))) return 'vorort'; return null; },
+  weekday(tag, m, j) { const d = new Date(j, m - 1, tag); return d.getMonth() === m - 1 ? d.getDay() + 1 : null; },
+  paare(zeilen, tol) {
+    const zahlen = zeilen.map(z => { const t = z.text.trim(), m = t.match(this.nurZahl); const n = m ? +m[1] : 0; return n >= 1 && n <= 31 ? { x: z.midX, y: z.midY, n } : null; }).filter(Boolean);
+    const frag = [];
+    for (const z of zeilen) { const t = z.text.trim(); let m = t.match(this.tagInline); if (m) { frag.push({ y: z.midY, wd: this.wtagIdx[m[1].toLowerCase()], n: +m[2] }); continue; }
+      m = t.match(this.nurWtag); if (!m) continue; const wdx = this.wtagIdx[m[1].toLowerCase()];
+      const kand = zahlen.filter(k => Math.abs(k.x - z.midX) < 0.05 && k.y <= z.midY + 0.5 * tol && k.y >= z.midY - 3 * tol);
+      let best = null; for (const k of kand) if (!best || Math.abs(k.y - z.midY) < Math.abs(best.y - z.midY)) best = k;
+      frag.push({ y: best ? (best.y + z.midY) / 2 : z.midY, wd: wdx, n: best ? best.n : null }); }
+    return frag.sort((a, b) => b.y - a.y);
+  },
+  medH(zeilen) { const h = zeilen.map(z => z.h).sort((a, b) => a - b); return h.length ? h[Math.floor(h.length / 2)] : 0.02; },
+  erkenneMonat(zeilen) {
+    for (const z of zeilen) { const m = z.text.match(this.monatRe); if (m) { const mon = this.monatMap[m[1].toLowerCase().slice(0, 3)]; if (mon) return { m: mon, j: +m[2], q: 'kopfzeile' }; } }
+    const paare = this.paare(zeilen, Math.max(0.006, this.medH(zeilen) * 0.8)).filter(p => p.n != null);
+    if (paare.length >= 2) { let best = null; const now = new Date(); for (let off = -6; off <= 6; off++) { const d = addMonths(now, off), m = d.getMonth() + 1, j = d.getFullYear();
+        const score = paare.filter(p => this.weekday(p.n, m, j) === p.wd).length; if (!best || score > best.score || (score === best.score && Math.abs(off) < best.dist)) best = { score, m, j, dist: Math.abs(off) }; }
+      if (best && best.score >= Math.max(2, Math.ceil(paare.length * 0.8))) return { m: best.m, j: best.j, q: 'wochentage' }; }
+    return { m: new Date().getMonth() + 1, j: new Date().getFullYear(), q: 'fallback' };
+  },
+  anker(zeilen, tol, m, j) { const out = []; let last = 0; for (const f of this.paare(zeilen, tol)) { let tag = null; if (f.n != null && this.weekday(f.n, m, j) === f.wd && f.n > last) tag = f.n;
+      if (tag == null) { for (let d = last + 1; d <= 31; d++) if (this.weekday(d, m, j) === f.wd) { tag = d; break; } } if (tag == null) continue; out.push({ y: f.y, tag }); last = tag; } return out; },
+  parse(zeilen, m, j) {
+    const tol = Math.max(0.006, this.medH(zeilen) * 0.8), anker = this.anker(zeilen, tol, m, j), out = [];
+    for (const z of zeilen) {
+      const t = this.saeubere(z.text), zm = t.match(this.zeitRe); if (!zm) continue;
+      let art = this.klassifiziere(t), quelle = t;
+      if (!art) { const nb = zeilen.filter(o => o.text !== z.text && Math.abs(o.midY - z.midY) < tol && o.minX >= z.minX - 0.02).sort((a, b) => Math.abs(a.midY - z.midY) - Math.abs(b.midY - z.midY)); const n = nb.find(o => this.klassifiziere(o.text)); if (n) { art = this.klassifiziere(n.text); quelle = t + '  ' + n.text; } }
+      if (!art) continue;
+      let tag = null;
+      if (anker.length) {
+        // Normal: nächster Anker. Beginnt die Zeit mit "+1" (Folgetag-Eintrag am Blockende), gilt der nächste Anker OBERHALB,
+        // sonst rutscht der Eintrag in den nächsten Tagesblock.
+        const beginnPlus = !!zm[3]; let a = null;
+        const kand = beginnPlus ? anker.filter(k => k.y >= z.midY - tol) : anker;
+        for (const k of (kand.length ? kand : anker)) if (!a || Math.abs(k.y - z.midY) < Math.abs(a.y - z.midY)) a = k; tag = a.tag; }
+      else { const tm = z.text.trim().match(/^(mo|di|mi|do|fr|sa|so)\.?\s*(\d{1,2})\b/i); if (tm) tag = +tm[2]; }
+      if (tag == null) continue;
+      const bh = +zm[1], bm = +zm[2], eh = +zm[4], em = +zm[5]; if (bh > 23 || eh > 23 || bm > 59 || em > 59) continue;
+      const basis0 = new Date(j, m - 1, tag), bb = zm[3] ? addDays(basis0, 1) : basis0, be = zm[6] ? addDays(basis0, 1) : basis0;
+      const b = new Date(bb); b.setHours(bh, bm, 0, 0); let e = new Date(be); e.setHours(eh, em, 0, 0); if (e <= b) e = addDays(e, 1);
+      const dh = (e - b) / 3600000; if (art === 'rufbereitschaft' && dh < 6) continue; if (art !== 'rufbereitschaft' && dh > 24) continue;
+      out.push({ id: uid(), art, beginn: b, ende: e, quelltext: quelle, uebernehmen: true });
+    }
+    const uniq = []; for (const e of out) if (!uniq.some(u => u.art === e.art && Math.abs(u.beginn - e.beginn) < 60000)) uniq.push(e);
+    return uniq.sort((a, b) => a.beginn - b.beginn);
+  },
+};
+const ART = { rufbereitschaft: 'Rufbereitschaft', vorort: 'Einsatz vor Ort', technisch: 'Einsatz technisch' };
+function viewImport() {
+  const im = UI.imp; let h = kopf('Foto-Import', 'Dienstplan aus dem Dokumentationstool');
+  h += karte(`<div class="row"><label class="btn" style="display:block">📷 Foto aufnehmen<input type="file" accept="image/*" capture="environment" hidden onchange="bildGewaehlt(this)"></label><label class="btn rand" style="display:block">Aus Mediathek<input type="file" accept="image/*" hidden onchange="bildGewaehlt(this)"></label></div>
+    <div class="mini">Erkannt werden Zeilen wie "16:30-08:00+1 Rufbereitschaft", "*AE in RB ohne FZA" (vor Ort) und "techn. AE in RB" (technisch). Am besten ein zugeschnittener PC-Screenshot. Die Texterkennung lädt beim ersten Mal ein Sprachpaket (Internet nötig), danach läuft sie im Browser.</div>`, 'Dienstplan-Foto');
+  if (im.bild) h += karte(`<img class="vorschau" src="${im.bild}"><div class="row"><select onchange="UI.imp.monat=+this.value">${MON.map((n, i) => `<option value="${i + 1}" ${im.monat === i + 1 ? 'selected' : ''}>${n}</option>`).join('')}</select><select onchange="UI.imp.jahr=+this.value">${[im.jahr - 2, im.jahr - 1, im.jahr, im.jahr + 1].map(j => `<option ${j === im.jahr ? 'selected' : ''}>${j}</option>`).join('')}</select></div>
+    ${im.quelle ? `<div class="mini ${im.quelle === 'fallback' ? 'warn' : ''}">Monat ${{ kopfzeile: 'aus der Kopfzeile', wochentage: 'aus den Wochentagen abgeleitet', fallback: 'nicht erkannt – bitte prüfen' }[im.quelle]}</div>` : ''}
+    <button class="btn rand" ${im.laeuft ? 'disabled' : ''} onclick="zuordnen()">${im.laeuft ? 'Texterkennung läuft …' : 'Mit diesem Monat neu zuordnen'}</button>`, 'Vorschau');
+  if (im.fehler) h += karte(`<div class="warn">${esc(im.fehler)}</div>`); if (im.erfolg) h += karte(`<div class="ok">${esc(im.erfolg)}</div>`);
+  if (im.eintraege.length) {
+    const neu = im.eintraege.filter(e => !istDuplikat(e)).length, fehlend = nichtImScan();
+    h += karte(`<div class="row small b"><span style="color:var(--grund)">⊕ ${neu} neu</span><span class="sec">✓ ${im.eintraege.length - neu} bereits erfasst</span></div>
+      ${fehlend.length ? `<div class="left"><div class="small b" style="color:var(--ueberstd)">⚠ ${fehlend.length} in der App, aber nicht im Scan</div>${fehlend.map(x => `<div class="mini">${x}</div>`).join('')}<div class="mini tert">Zur Kontrolle: Diese App-Einträge liegen im gescannten Zeitraum, wurden im System aber nicht gefunden.</div></div>` : ''}`, 'Abgleich mit der App');
+    h += karte(im.eintraege.map(e => `<div class="imp-eintrag"><div class="k"><input type="checkbox" ${e.uebernehmen ? 'checked' : ''} onchange="impToggle('${e.id}',this.checked)"><div style="flex:1"><div class="small b">${ART[e.art]} ${istDuplikat(e) ? '<span class="mini sec">bereits vorhanden</span>' : ''}</div><div class="mini mono">${Fmt.kurz(e.beginn)} – ${Fmt.kurz(e.ende)}</div><div class="mini tert" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(e.quelltext)}</div></div></div>
+      <details><summary class="mini">Korrigieren</summary><div style="display:flex;flex-direction:column;gap:6px;margin-top:6px"><select onchange="impSet('${e.id}','art',this.value)">${Object.entries(ART).map(([k, v]) => `<option value="${k}" ${e.art === k ? 'selected' : ''}>${v}</option>`).join('')}</select>
+      <div class="feld"><label>Beginn</label><input type="datetime-local" value="${toInput(e.beginn)}" onchange="impSet('${e.id}','beginn',new Date(this.value))"></div><div class="feld"><label>Ende</label><input type="datetime-local" value="${toInput(e.ende)}" onchange="impSet('${e.id}','ende',new Date(this.value))"></div></div></details></div>`).join('')
+      + `<div class="mini">Bitte prüfen und bei Bedarf abwählen – die Texterkennung ist nicht fehlerfrei.</div><button class="btn" ${im.eintraege.some(e => e.uebernehmen && !istDuplikat(e)) ? '' : 'disabled'} onclick="uebernehmen()">${im.eintraege.filter(e => e.uebernehmen && !istDuplikat(e)).length} Einträge übernehmen</button>`, `Erkannte Einträge · ${im.eintraege.length}`);
+  }
+  if (im.zeilen.length) h += karte(`<details><summary>Erkannter Rohtext (${im.zeilen.length} Zeilen)</summary><div class="roh">${esc(im.zeilen.filter(z => z.art === 'line').map(z => z.text).join('\n'))}</div></details>`);
+  return h;
+}
+function istDuplikat(e) { return e.art === 'rufbereitschaft' ? DB.tage.some(t => Math.abs(new Date(t.beginn) - e.beginn) < 60000) : DB.einsaetze.some(x => Math.abs(B(x) - e.beginn) < 60000 && Math.abs(E(x) - e.ende) < 60000); }
+function nichtImScan() { const es = UI.imp.eintraege; if (!es.length) return []; const von = sod(new Date(Math.min(...es.map(e => e.beginn)))), bis = addDays(sod(new Date(Math.max(...es.map(e => e.ende)))), 1), out = [];
+  for (const e of DB.einsaetze) if (B(e) >= von && B(e) < bis && !es.some(x => x.art !== 'rufbereitschaft' && Math.abs(x.beginn - B(e)) < 60000 && Math.abs(x.ende - E(e)) < 60000)) out.push(`Einsatz ${Fmt.kurz(B(e))}–${Fmt.zeit(E(e))} · ${TYP[e.typ]}`);
+  for (const t of DB.tage) { const tb = new Date(t.beginn); if (tb >= von && tb < bis && !es.some(x => x.art === 'rufbereitschaft' && Math.abs(x.beginn - tb) < 60000)) out.push(`Bereitschaftstag ${Fmt.kurz(tb)}`); } return out; }
+function impToggle(id, v) { const e = UI.imp.eintraege.find(x => x.id === id); if (e) e.uebernehmen = v; }
+function impSet(id, k, v) { const e = UI.imp.eintraege.find(x => x.id === id); if (e && !(v instanceof Date && isNaN(v))) { e[k] = v; render(); } }
+function bildGewaehlt(inp) { const f = inp.files && inp.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { UI.imp.bild = r.result; UI.imp.zeilen = []; UI.imp.eintraege = []; UI.imp.erfolg = ''; erkennen(false); }; r.readAsDataURL(f); }
+function zuordnen() { erkennen(true); }
+async function ladeTesseract() { if (window.Tesseract) return; await new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js'; s.onload = res; s.onerror = () => rej(new Error('Texterkennung konnte nicht geladen werden (Internet nötig).')); document.head.appendChild(s); }); }
+async function vorverarbeiten(src) { const img = new Image(); await new Promise((res, rej) => { img.onload = res; img.onerror = () => rej(new Error('Bild konnte nicht gelesen werden.')); img.src = src; }); const scale = img.width < 1800 ? Math.min(3, 1800 / img.width) : 1;
+  const c = document.createElement('canvas'); c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale); const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(img, 0, 0, c.width, c.height);
+  const d = g.getImageData(0, 0, c.width, c.height), p = d.data; for (let i = 0; i < p.length; i += 4) { let y = 0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2]; y = (y - 128) * 1.6 + 128 + 12; y = y < 0 ? 0 : y > 255 ? 255 : y; p[i] = p[i + 1] = p[i + 2] = y; }
+  g.putImageData(d, 0, 0); return { canvas: c, w: c.width, h: c.height }; }
+async function erkennen(monatBeibehalten) {
+  const im = UI.imp; im.laeuft = true; im.fehler = ''; im.erfolg = ''; im.eintraege = []; render();
+  try {
+    if (!im.zeilen.length || !monatBeibehalten) {
+      await ladeTesseract(); const { canvas, w, h } = await vorverarbeiten(im.bild);
+      const res = await Tesseract.recognize(canvas, 'deu', { logger: () => {} });
+      const norm = (bb, text, art) => ({ text, art, minX: bb.x0 / w, midX: (bb.x0 + bb.x1) / 2 / w, midY: 1 - (bb.y0 + bb.y1) / 2 / h, h: (bb.y1 - bb.y0) / h });
+      const zl = [];
+      for (const l of res.data.lines || []) { if (l.text.trim()) zl.push(norm(l.bbox, l.text.trim(), 'line')); for (const wd of l.words || []) if (wd.text.trim()) zl.push(norm(wd.bbox, wd.text.trim(), 'word')); }
+      im.zeilen = zl;
+    }
+    if (!monatBeibehalten) { const r = Parser.erkenneMonat(im.zeilen); im.monat = r.m; im.jahr = r.j; im.quelle = r.q; }
+    im.eintraege = Parser.parse(im.zeilen, im.monat, im.jahr);
+    for (const e of im.eintraege) if (istDuplikat(e)) e.uebernehmen = false;
+    if (!im.eintraege.length) im.fehler = 'Keine Rufbereitschafts- oder Einsatzzeilen erkannt. Bitte näher/gerader fotografieren oder Monat/Jahr prüfen.';
+  } catch (e) { im.fehler = 'Texterkennung fehlgeschlagen: ' + (e.message || e); }
+  im.laeuft = false; render();
+}
+function uebernehmen() {
+  const im = UI.imp, s = S(); let n = 0, tageErg = 0, zus = 0;
+  for (const e of im.eintraege) if (e.uebernehmen && !istDuplikat(e) && e.art === 'rufbereitschaft' && !RB.istDublette(e.beginn)) { DB.tage.push({ id: uid(), beginn: e.beginn.toISOString(), ende: e.ende.toISOString(), quelle: 'foto' }); n++; }
+  for (const e of im.eintraege) if (e.uebernehmen && !istDuplikat(e) && e.art !== 'rufbereitschaft') { const r = RB.einfuegen(e.beginn, e.ende, e.art, 'foto'); if (r.art === 'neu') { n++; if (RB.ergaenzeTag(r.neu, s)) tageErg++; } else zus++; }
+  save(); let m = `${n} Einträge übernommen ✓`; if (tageErg) m += ` · ${tageErg} Bereitschaftstag(e) automatisch ergänzt`; if (zus) m += ` · ${zus} wegen Überschneidung zusammengeführt (Einzeleintrag ausgeblendet im Protokoll)`;
+  im.erfolg = m; im.eintraege = []; render();
+}
+
+// ============================================================ Einstellungen (Blatt) + Backup
+const LAENDER = [['NW', 'Nordrhein-Westfalen'], ['BW', 'Baden-Württemberg'], ['BY', 'Bayern'], ['BE', 'Berlin'], ['BB', 'Brandenburg'], ['HB', 'Bremen'], ['HH', 'Hamburg'], ['HE', 'Hessen'], ['MV', 'Mecklenburg-Vorpommern'], ['NI', 'Niedersachsen'], ['RP', 'Rheinland-Pfalz'], ['SL', 'Saarland'], ['SN', 'Sachsen'], ['ST', 'Sachsen-Anhalt'], ['SH', 'Schleswig-Holstein'], ['TH', 'Thüringen']];
+let sheetMeldung = '';
+function sheet(open) { $('sheet').classList.toggle('on', open); if (open) renderSheet(); else render(); }
+function set(k, v) { S()[k] = v; if (k === 'entgeltgruppe') S().stufe = Math.min(S().stufe, Math.max(1, Entgelttabelle.stufen(v))); save(); sheetMeldung = 'Gespeichert – gilt sofort in allen Reitern'; renderSheet(); setTimeout(() => { sheetMeldung = ''; if ($('sheet').classList.contains('on')) renderSheet(); }, 2200); }
+function renderSheet() {
+  const s = S(), r = (l, inner) => `<div class="r"><span>${l}</span>${inner}</div>`, sel = (k, opts) => `<select onchange="set('${k}',${typeof opts[0][0] === 'number' ? '+' : ''}this.value)">${opts.map(([v, l]) => `<option value="${v}" ${s[k] == v ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+  const tx = (k, ph, type = 'text') => `<input type="${type}" placeholder="${ph}" value="${esc(s[k])}" onchange="set('${k}',this.value)" autocapitalize="none">`;
+  $('sheetInner').innerHTML = `<h3>Einstellungen</h3><div class="sub" style="text-align:center">Tarif · Ruhezeit · Meldungen</div>${sheetMeldung ? `<div class="ok" style="text-align:center">✓ ${sheetMeldung}</div>` : ''}
+    <div class="sec-t">Darstellung</div><div class="seg">${[['dunkel', 'Dunkel'], ['hell', 'Hell'], ['system', 'System']].map(([v, l]) => `<button class="${s.darstellung === v ? 'on' : ''}" onclick="set('darstellung','${v}');render()">${l}</button>`).join('')}</div>
+    <div class="sec-t">Tarif (TV-Ärzte/TdL)</div>${r('Entgeltgruppe', sel('entgeltgruppe', Entgelttabelle.gruppen.map(g => [g, g])))}${r('Stufe', sel('stufe', Array.from({ length: Math.max(1, Entgelttabelle.stufen(s.entgeltgruppe)) }, (_, i) => [i + 1, 'Stufe ' + (i + 1)])))}
+    ${r('Monatsentgelt', `<span class="mono">${Fmt.euro(Entgelttabelle.monatsentgelt(s.entgeltgruppe, s.stufe, new Date()))}</span>`)}${r('Stundenentgelt', `<span class="mono">${Fmt.euro(Entgelttabelle.stundenentgelt(s.entgeltgruppe, s.stufe, new Date()))}</span>`)}
+    <div class="hint">Tabelle ${Entgelttabelle.tabelle(new Date()).bez} · ${Entgelttabelle.bezeichnungen[s.entgeltgruppe] || ''}</div>
+    ${r('Bundesland (Feiertage)', sel('bundesland', LAENDER))}${r('Einsätze ohne Freizeitausgleich (Auszahlung)', `<input type="checkbox" ${s.ohneFreizeitausgleich ? 'checked' : ''} onchange="set('ohneFreizeitausgleich',this.checked)">`)}
+    <div class="sec-t">Ruhezeit</div><div class="seg"><button class="${s.refRuheStunden === 10 ? 'on' : ''}" onclick="set('refRuheStunden',10)">10 Stunden</button><button class="${s.refRuheStunden === 11 ? 'on' : ''}" onclick="set('refRuheStunden',11)">11 Stunden</button></div>
+    ${r('Regulärer Dienstbeginn', `<input type="time" value="${s.dienstbeginn}" onchange="set('dienstbeginn',this.value)">`)}${r('Regelarbeitszeit-Ende (Mo–Fr)', `<input type="time" value="${s.dienstende}" onchange="set('dienstende',this.value)">`)}
+    <div class="sec-t">Meldungen</div>${r('Mein Name', tx('name', 'Name'))}${r('Meine E-Mail', tx('mail', 'für Protokoll an mich', 'email'))}${r('Verteiler', tx('empfaenger', 'Mailadressen, mit Komma', 'email'))}
+    <div class="sec-t">Backup</div><button class="btn rand" onclick="backupExport()">⇪ Backup erstellen &amp; teilen (${DB.einsaetze.length} Einsätze, ${DB.tage.length} Tage)</button>
+    <label class="btn rand" style="display:block;text-align:center">⇩ Backup wiederherstellen (Datei wählen)<input type="file" accept=".json,application/json" hidden onchange="backupImport(this)"></label>
+    <div class="hint">JSON-Datei mit allen Einsätzen, Bereitschaftstagen und Einstellungen. Beim Wiederherstellen bleiben vorhandene Einträge erhalten; Dubletten werden übersprungen, Überschneidungen zusammengeführt. Da die Daten nur im Browser dieses Telefons liegen, regelmäßig ein Backup per Mail an dich selbst schicken.</div>
+    <div class="hint">Alle Daten bleiben lokal auf diesem Gerät. Entgelttabellen TdL 40 h (Marburger Bund, Tarifrunde 2026) – je Dienstdatum automatisch die gültige Tabelle.</div>
+    <button class="btn" onclick="sheet(false)">Fertig</button>`;
+}
+async function backupExport() {
+  const d = { app: 'Zeiterfassung', version: 1, exportiert: new Date().toISOString(), einsaetze: aktive().map(e => ({ beginn: e.beginn, ende: e.ende, typ: e.typ, quelle: e.quelle || 'manuell' })), tage: DB.tage.map(t => ({ beginn: t.beginn, ende: t.ende, quelle: t.quelle || 'manuell' })), einstellungen: S() };
+  const name = `Zeiterfassung-Backup-${toDateInput(new Date())}.json`, blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' }), file = new File([blob], name, { type: 'application/json' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: name }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+}
+function backupImport(inp) {
+  const f = inp.files && inp.files[0]; if (!f) return; const r = new FileReader();
+  r.onload = () => { try { const d = JSON.parse(r.result); let n = 0, t = 0, ue = 0;
+    for (const x of d.tage || []) { if (RB.istDublette(new Date(x.beginn))) { ue++; continue; } DB.tage.push({ id: uid(), beginn: x.beginn, ende: x.ende, quelle: x.quelle || 'manuell' }); t++; }
+    for (const x of d.einsaetze || []) { const b = new Date(x.beginn), e = new Date(x.ende); if (DB.einsaetze.some(y => Math.abs(B(y) - b) < 60000 && Math.abs(E(y) - e) < 60000)) { ue++; continue; } const rr = RB.einfuegen(b, e, x.typ === 'vorort' ? 'vorort' : 'technisch', x.quelle || 'manuell'); if (rr.art === 'neu') n++; else ue++; }
+    if (d.einstellungen && confirm('Auch die Einstellungen aus dem Backup übernehmen?')) DB.s = Object.assign(defaultSettings(), d.einstellungen);
+    save(); sheetMeldung = `Wiederhergestellt: ${n} Einsätze, ${t} Tage${ue ? `, ${ue} Dubletten übersprungen` : ''}`; renderSheet(); } catch (e) { alert('Wiederherstellen fehlgeschlagen: ' + e); } };
+  r.readAsText(f);
+}
+
+// ============================================================ Start
+load();
+$('zahnrad').onclick = () => sheet(true);
+$('sheet').addEventListener('click', e => { if (e.target === $('sheet')) sheet(false); });
+matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => render());
+render();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
