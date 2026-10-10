@@ -1,5 +1,5 @@
 // Service Worker: App-Dateien offline verfügbar halten. Version bei jeder Änderung erhöhen.
-const VERSION = 'zeiterfassung-v1';
+const VERSION = 'zeiterfassung-v2';
 const APP = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 const CDN = ['https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js'];
 

@@ -9,22 +9,24 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
-<meta name="theme-color" content="#0d1a30">
+<meta name="theme-color" content="#131517">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
 <style>
 :root{
-  --bg1:#0b1730;--bg2:#0e2a3f;--txt:#f2f5fa;--txt2:rgba(242,245,250,.62);--txt3:rgba(242,245,250,.42);
-  --karte:rgba(255,255,255,.07);--rand:rgba(255,255,255,.14);--rand2:rgba(255,255,255,.05);
-  --pauschale:#5c94ff;--grund:#33cc8f;--ueberstd:#ffb840;--zuschlag:#ff6b66;--technisch:#40bfd9;--vorort:#ff9e33;
-  --akzent1:#4d8ffa;--akzent2:#38b8d1;--tabbar:rgba(12,24,45,.72);--glow1:rgba(77,143,250,.32);--glow2:rgba(56,184,209,.26);
-  --feld:rgba(255,255,255,.09);--sel:rgba(92,148,255,.16);
+  --bg1:#131517;--bg2:#1d2124;--txt:#f1f3f5;--txt2:rgba(241,243,245,.62);--txt3:rgba(241,243,245,.42);
+  --karte:rgba(255,255,255,.065);--rand:rgba(255,255,255,.14);--rand2:rgba(255,255,255,.06);
+  --pauschale:#e6e9ec;--grund:#b4bac0;--ueberstd:#858c93;--zuschlag:#5b6269;--technisch:#dfe3e7;--vorort:#8a9199;
+  --akzent1:#d9dde1;--akzent2:#9aa1a8;--tabbar:rgba(19,21,23,.74);--glow1:rgba(255,255,255,.07);--glow2:rgba(255,255,255,.045);
+  --feld:rgba(255,255,255,.08);--sel:rgba(255,255,255,.12);--btnTxt:#15181b;
 }
 html[data-theme="hell"]{
-  --bg1:#e8eef8;--bg2:#d9e9f0;--txt:#111a2b;--txt2:rgba(17,26,43,.62);--txt3:rgba(17,26,43,.42);
-  --karte:rgba(255,255,255,.62);--rand:rgba(255,255,255,.9);--rand2:rgba(255,255,255,.3);
-  --tabbar:rgba(240,245,252,.8);--glow1:rgba(77,143,250,.22);--glow2:rgba(56,184,209,.2);--feld:rgba(0,0,0,.06);--sel:rgba(92,148,255,.16);
+  --bg1:#eceef0;--bg2:#dfe2e6;--txt:#1b1f23;--txt2:rgba(27,31,35,.62);--txt3:rgba(27,31,35,.42);
+  --karte:rgba(255,255,255,.58);--rand:rgba(255,255,255,.95);--rand2:rgba(0,0,0,.06);
+  --pauschale:#2b3035;--grund:#5c646c;--ueberstd:#8b939b;--zuschlag:#b9c0c7;--technisch:#3a4047;--vorort:#9aa2aa;
+  --akzent1:#3a4047;--akzent2:#5c646c;--tabbar:rgba(236,238,240,.8);--glow1:rgba(255,255,255,.6);--glow2:rgba(0,0,0,.04);
+  --feld:rgba(0,0,0,.06);--sel:rgba(0,0,0,.08);--btnTxt:#fff;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%;background:var(--bg1)}
@@ -36,7 +38,7 @@ body::before{width:60vw;height:60vw;left:-18vw;top:6vh;background:var(--glow1)}
 body::after{width:55vw;height:55vw;right:-16vw;bottom:14vh;background:var(--glow2)}
 main{max-width:640px;margin:0 auto;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;flex-direction:column;gap:14px}
 .kopf{padding-top:6px}
-.logo{width:40px;height:40px;border-radius:50%;margin:0 auto 6px;background:linear-gradient(135deg,var(--akzent1),var(--akzent2));display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px var(--glow1)}
+.logo{width:40px;height:40px;border-radius:50%;margin:0 auto 6px;background:var(--karte);border:1px solid var(--rand);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.2)}
 .logo svg{width:22px;height:22px}
 h1{font-size:30px;margin:0;font-weight:700}
 .sub{color:var(--txt2);font-size:13px;margin-top:2px}
@@ -45,30 +47,30 @@ h1{font-size:30px;margin:0;font-weight:700}
 .karte h2{font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--txt2);margin:0;font-weight:700}
 .mini{font-size:11.5px;color:var(--txt2)}.tert{color:var(--txt3)}.small{font-size:13px}.b{font-weight:700}.sec{color:var(--txt2)}
 .left{text-align:left}.mono{font-variant-numeric:tabular-nums}
-.btn{border:0;border-radius:14px;padding:13px 16px;font:700 16px Arial;color:#fff;background:linear-gradient(135deg,var(--akzent1),var(--akzent2));width:100%;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.2)}
+.btn{border:1px solid var(--rand);border-radius:14px;padding:13px 16px;font:700 16px Arial;color:var(--btnTxt);background:linear-gradient(135deg,var(--akzent1),var(--akzent2));width:100%;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.2)}
 .btn:disabled{opacity:.5}
-.btn.tint{background:linear-gradient(135deg,var(--c1),var(--c2))}
-.btn.grau{background:rgba(128,128,128,.35)}
-.btn.klein{padding:8px 12px;font-size:13px;width:auto;border-radius:10px}
+.btn.tint{background:linear-gradient(135deg,var(--c1),var(--c2));color:var(--c3,var(--btnTxt))}
+.btn.grau{background:var(--feld);color:var(--txt);box-shadow:none}
+.btn.klein{padding:6px 10px;font-size:13px;width:auto;border-radius:10px}
 .btn.rand{background:var(--feld);color:var(--txt);box-shadow:none;font-weight:400}
 .row{display:flex;gap:10px;align-items:center}.row>*{flex:1}
 .seg{display:flex;background:var(--feld);border-radius:10px;padding:2px}
 .seg button{flex:1;border:0;background:transparent;color:var(--txt);padding:8px;border-radius:8px;font:15px Arial;cursor:pointer}
-.seg button.on{background:rgba(255,255,255,.22);font-weight:700}
+.seg button.on{background:rgba(255,255,255,.18);font-weight:700}
 html[data-theme="hell"] .seg button.on{background:#fff}
 input,select,textarea{font:16px Arial;color:var(--txt);background:var(--feld);border:1px solid var(--rand2);border-radius:10px;padding:9px 10px;color-scheme:dark}
 html[data-theme="hell"] input,html[data-theme="hell"] select{color-scheme:light}
 input[type=datetime-local],input[type=date],input[type=time]{width:100%}
 .feld{display:flex;align-items:center;gap:8px;text-align:left}.feld label{flex:0 0 68px;font-size:13px;color:var(--txt2)}.feld input,.feld select{flex:1;min-width:0}
 .chip{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid transparent}
-.chip.technisch{color:var(--technisch);background:rgba(64,191,217,.18);border-color:rgba(64,191,217,.45)}
-.chip.vorort{color:var(--vorort);background:rgba(255,158,51,.18);border-color:rgba(255,158,51,.45)}
-.chip.rot{color:var(--zuschlag);background:rgba(255,107,102,.18)}
+.chip.technisch{color:var(--txt);background:rgba(255,255,255,.16);border-color:var(--rand)}
+.chip.vorort{color:var(--txt);background:rgba(128,128,128,.22);border-color:var(--rand)}
+.chip.rot{color:#ff6b66;background:rgba(255,107,102,.16)}
 .ergebnis{border-radius:22px;padding:18px;border:1px solid;display:flex;flex-direction:column;gap:10px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-.ergebnis.gruen{background:rgba(52,199,89,.16);border-color:rgba(52,199,89,.45);box-shadow:0 8px 24px rgba(52,199,89,.2)}
-.ergebnis.orange{background:rgba(255,149,0,.18);border-color:rgba(255,149,0,.45);box-shadow:0 8px 24px rgba(255,149,0,.2)}
-.ergebnis.rot{background:rgba(255,69,58,.18);border-color:rgba(255,69,58,.45);box-shadow:0 8px 24px rgba(255,69,58,.2)}
-.ergebnis.laeuft{background:rgba(255,107,102,.14);border-color:rgba(255,107,102,.45)}
+.ergebnis.gruen{background:rgba(52,199,89,.10);border-color:rgba(52,199,89,.35);box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.ergebnis.orange{background:rgba(255,149,0,.12);border-color:rgba(255,149,0,.4);box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.ergebnis.rot{background:rgba(255,69,58,.12);border-color:rgba(255,69,58,.4);box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.ergebnis.laeuft{background:var(--karte);border-color:var(--rand)}
 .dot{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:6px}
 .dot.gruen{background:#34c759;box-shadow:0 0 6px #34c759}.dot.orange{background:#ff9500;box-shadow:0 0 6px #ff9500}.dot.rot{background:#ff453a;box-shadow:0 0 6px #ff453a}
 .hero{font-size:60px;font-weight:700;line-height:1;margin:4px 0}
@@ -83,14 +85,15 @@ hr{border:0;border-top:1px solid var(--rand2);margin:2px 0;width:100%}
 .ausgeblendet{display:flex;gap:8px;align-items:center;text-align:left;color:var(--txt2);padding:8px;border-radius:10px;border:1px dashed var(--rand);background:rgba(128,128,128,.08);cursor:pointer}
 .ausgeblendet .t{text-decoration:line-through;font-size:13px}
 .ausgeblendet .u{font-size:11.5px}
-.tag{display:flex;gap:8px;align-items:center;font-size:13px;text-align:left}.tag .m{color:var(--pauschale)}
+.mahnung{border-color:rgba(255,180,64,.45)}
+.tag{display:flex;gap:8px;align-items:center;font-size:13px;text-align:left}.tag .m{color:var(--txt2)}
 .kachel{flex:1;padding:8px 4px;border-radius:12px;display:flex;flex-direction:column;gap:2px}
 .kachel .n{font-size:24px;font-weight:700}.kachel .l{font-size:11.5px;color:var(--txt2)}
-.kachel.g{background:rgba(51,204,143,.14);color:var(--grund)}.kachel.t{background:rgba(64,191,217,.14);color:var(--technisch)}
-.kachel.v{background:rgba(255,158,51,.14);color:var(--vorort)}.kachel.p{background:rgba(92,148,255,.14);color:var(--pauschale)}
+.kachel.g{background:var(--feld);color:var(--txt)}.kachel.t{background:var(--feld);color:var(--technisch)}
+.kachel.v{background:var(--feld);color:var(--vorort)}.kachel.p{background:var(--feld);color:var(--pauschale)}
 .kachel.gross .n{font-size:34px}.kachel .e{font-size:13px;font-weight:700;color:var(--txt)}
 .auswahl{display:flex;gap:8px;align-items:center;text-align:left;padding:7px 10px;border-radius:10px;background:rgba(128,128,128,.08);font-size:11.5px;color:var(--txt2)}
-.auswahl.on{background:rgba(128,128,128,.14);font-size:13px;font-weight:700;color:var(--txt)}
+.auswahl.on{background:var(--sel);font-size:13px;font-weight:700;color:var(--txt)}
 .grafik{position:relative;width:100%}
 canvas{width:100%!important}
 table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:4px 6px;text-align:right}td:first-child,th:first-child{text-align:left}
@@ -98,11 +101,11 @@ th{font-weight:400;font-size:11.5px;color:var(--txt2)}tr.hv{background:var(--sel
 td .d{display:block;font-size:11px;color:var(--txt2)}td.nw{white-space:nowrap}
 .legende{display:flex;flex-direction:column;gap:8px}.legende div{display:flex;align-items:center;gap:8px;font-size:13px}.legende .sw{width:12px;height:12px;border-radius:4px}.legende .sp{flex:1;text-align:left}
 .balken{display:flex;height:12px;border-radius:6px;overflow:hidden;width:100%}
-.nav{display:flex;align-items:center;justify-content:space-between}.nav button{background:none;border:0;color:var(--akzent1);font-size:22px;cursor:pointer;padding:0 8px}
+.nav{display:flex;align-items:center;justify-content:space-between}.nav button{background:none;border:0;color:var(--txt);font-size:22px;cursor:pointer;padding:0 8px}
 .tabs{position:fixed;left:0;right:0;bottom:0;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:var(--tabbar);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--rand2);display:flex;justify-content:space-around;z-index:20}
 .tabs button{background:none;border:0;color:var(--txt2);font:11px Arial;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;border-radius:12px;cursor:pointer;min-width:58px}
 .tabs button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.tabs button.on{color:var(--akzent1);background:rgba(92,148,255,.14)}
+.tabs button.on{color:var(--txt);background:rgba(255,255,255,.12)}
 .zahnrad{position:fixed;right:16px;top:calc(8px + env(safe-area-inset-top));z-index:15;width:44px;height:44px;border-radius:50%;border:1px solid var(--rand);background:var(--karte);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:var(--txt);font-size:20px;cursor:pointer}
 .sheet{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center}
 .sheet.on{display:flex}
@@ -165,11 +168,11 @@ function defaultSettings() {
   return { entgeltgruppe: 'Ä3', stufe: 1, dienstbeginn: '08:00', dienstende: '16:30', refRuheStunden: 11, name: '', mail: '', empfaenger: '',
     bundesland: 'NW', ohneFreizeitausgleich: true, darstellung: 'dunkel' };
 }
-let DB = { einsaetze: [], tage: [], s: defaultSettings() };
+let DB = { einsaetze: [], tage: [], s: defaultSettings(), meta: { letztesBackup: null, geaendert: 0 } };
 function load() {
-  try { const j = JSON.parse(localStorage.getItem(LS) || 'null'); if (j) { DB = j; DB.s = Object.assign(defaultSettings(), j.s || {}); } } catch (e) {}
+  try { const j = JSON.parse(localStorage.getItem(LS) || 'null'); if (j) { DB = j; DB.s = Object.assign(defaultSettings(), j.s || {}); DB.meta = Object.assign({ letztesBackup: null, geaendert: 0 }, j.meta || {}); } } catch (e) {}
 }
-function save() { try { localStorage.setItem(LS, JSON.stringify(DB)); } catch (e) { alert('Speichern fehlgeschlagen: ' + e); } }
+function save(stumm) { if (!stumm) DB.meta.geaendert = (DB.meta.geaendert || 0) + 1; try { localStorage.setItem(LS, JSON.stringify(DB)); } catch (e) { alert('Speichern fehlgeschlagen: ' + e); } }
 // Einsatz: {id, beginn, ende (ISO), typ, quelle, aktiv, laeuft, hinweis}
 const B = e => new Date(e.beginn), E = e => new Date(e.ende);
 const EW = e => e.laeuft ? new Date(Math.max(Date.now(), B(e).getTime() + 3 * 60000)) : E(e);
@@ -327,12 +330,24 @@ const UI = { tab: localStorage.getItem('zeiterfassung.tab') || 'rechner', form: 
 const charts = {};
 function chart(id, cfg) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } const c = document.getElementById(id); if (!c) return null; return charts[id] = new Chart(c, cfg); }
 const $ = id => document.getElementById(id);
-const logoSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="12" r="8"/><path d="M11 7v5l3 2"/><path d="M16 18l2 2 4-4" stroke-width="2.4"/></svg>`;
+const logoSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="12" r="8"/><path d="M11 7v5l3 2"/><path d="M16 18l2 2 4-4" stroke-width="2.4"/></svg>`;
 const kopf = (t, u) => `<div class="kopf"><div class="logo">${logoSvg}</div><h1>${t}</h1><div class="sub">${u}</div></div>`;
 const karte = (inner, titel) => `<div class="karte">${titel ? `<h2>${titel}</h2>` : ''}${inner}</div>`;
 const chip = (t, cls) => `<span class="chip ${cls}">${t}</span>`;
 const typChip = typ => chip(TYP[typ], typ);
 
+
+// Backup-Mahnung: erscheint, wenn seit dem letzten Backup ≥ 7 Tage vergangen sind und Daten geändert wurden,
+// oder wenn seit dem letzten Backup ≥ 5 Änderungen anstehen. Verschwindet nach dem Teilen.
+function backupMahnung() {
+  const m = DB.meta || {}; if (!DB.einsaetze.length && !DB.tage.length) return '';
+  const tage = m.letztesBackup ? Math.floor((Date.now() - new Date(m.letztesBackup)) / 86400000) : null;
+  const faellig = (m.geaendert || 0) > 0 && (tage === null || tage >= 7 || m.geaendert >= 5);
+  if (!faellig) return '';
+  const txt = tage === null ? 'Noch nie gesichert' : `Letztes Backup vor ${tage} Tag${tage === 1 ? '' : 'en'}`;
+  return `<div class="karte mahnung"><div class="b">⚠ Daten sichern</div><div class="mini">${txt} · ${m.geaendert} Änderung${m.geaendert === 1 ? '' : 'en'} seit dem letzten Backup. Die Daten liegen nur in diesem Browser – bitte das Backup per Mail an dich selbst schicken.</div>
+    <button class="btn" onclick="backupExport()">✉ Backup jetzt per Mail sichern</button><button class="btn rand klein" onclick="DB.meta.geaendert=0;save(true);render()">Später erinnern</button></div>`;
+}
 function render() {
   document.documentElement.dataset.theme = S().darstellung === 'system' ? (matchMedia('(prefers-color-scheme: light)').matches ? 'hell' : 'dunkel') : S().darstellung;
   const v = { rechner: viewRechner, protokoll: viewProtokoll, import: viewImport, verdienst: viewVerdienst, statistik: viewStatistik }[UI.tab] || viewRechner;
@@ -353,17 +368,17 @@ function renderTabs() {
 // ============================================================ Erfassen
 function viewRechner() {
   const s = S(), l = aktive().find(e => e.laeuft);
-  let h = kopf('Zeiterfassung', 'Rufbereitschaft · TV-Ärzte');
+  let h = kopf('Zeiterfassung', 'Rufbereitschaft · TV-Ärzte') + backupMahnung();
   if (l) {
     h += `<div class="ergebnis laeuft"><div><span class="dot rot"></span><span class="b sec small">Einsatz läuft</span></div>
       <div class="hero mono" id="laufDauer" style="font-size:48px">${Fmt.dauer(dauerMin(l))}</div>
       <div class="row" style="justify-content:center">${typChip(l.typ)}<span class="small sec">seit ${Fmt.kurz(B(l))}</span></div>
       <div class="row"><button class="btn grau" onclick="typWechsel('${l.id}')">${l.typ === 'vorort' ? '→ technisch' : '→ vor Ort'}</button>
-      <button class="btn tint" style="--c1:#ff6b66;--c2:#e0453c" onclick="beenden('${l.id}')">■ Beenden</button></div></div>`;
+      <button class="btn" onclick="beenden('${l.id}')">■ Beenden</button></div></div>`;
   } else {
     h += karte(`<div class="b">Das Telefon klingelt?</div><div class="mini">Einmal tippen – der Einsatz läuft mit. Beenden, sobald du fertig bist; auch Stunden später.</div>
-      <div class="row"><button class="btn tint" style="--c1:#40bfd9;--c2:#2a9db5" onclick="starten('technisch')">☎ Start technisch</button>
-      <button class="btn tint" style="--c1:#ff9e33;--c2:#e6821a" onclick="starten('vorort')">✚ Start vor Ort</button></div>`);
+      <div class="row"><button class="btn" onclick="starten('technisch')">☎ Start technisch</button>
+      <button class="btn grau" onclick="starten('vorort')">✚ Start vor Ort</button></div>`);
   }
   const f = UI.form;
   h += karte(`<div class="seg"><button class="${f.typ === 'technisch' ? 'on' : ''}" onclick="UI.form.typ='technisch';render()">Technisch (daheim)</button><button class="${f.typ === 'vorort' ? 'on' : ''}" onclick="UI.form.typ='vorort';render()">Vor Ort</button></div>
@@ -422,11 +437,11 @@ setInterval(() => { const el = $('laufDauer'); const l = aktive().find(e => e.la
 
 // ============================================================ Protokoll
 function viewProtokoll() {
-  const s = S(); let h = kopf('Protokoll', 'Einsätze und Bereitschaftstage nach Monat');
+  const s = S(); let h = kopf('Protokoll', 'Einsätze und Bereitschaftstage nach Monat') + backupMahnung();
   const f = RB.fensterAnTag(new Date(UI.neuerTag + 'T12:00'), s), dub = RB.istDublette(f.beginn);
   h += karte(`<details><summary>＋ Rufbereitschaftstag hinzufügen</summary><div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
     <div class="feld"><label>Datum</label><input type="date" value="${UI.neuerTag}" onchange="UI.neuerTag=this.value;render()"></div>
-    <button class="btn tint" style="--c1:#5c94ff;--c2:#3d6fd9" ${dub ? 'disabled' : ''} onclick="tagHinzu()">${Fmt.zeit(f.beginn)} → ${Fmt.zeit(f.ende)} am Folgetag eintragen</button>
+    <button class="btn" ${dub ? 'disabled' : ''} onclick="tagHinzu()">${Fmt.zeit(f.beginn)} → ${Fmt.zeit(f.ende)} am Folgetag eintragen</button>
     ${dub ? '<div class="warn">Dieser Tag ist bereits erfasst.</div>' : ''}
     <div class="mini">Werktags ${s.dienstende}–${s.dienstbeginn}, Sa/So/Feiertag 08:00–08:00. Die Pauschale fällt auch ohne Anruf an; beim Speichern eines Einsatzes wird der Tag automatisch ergänzt.</div></div></details>`);
   const map = {};
@@ -439,20 +454,20 @@ function viewProtokoll() {
     const v = Verdienst.monat(new Date(k), s), dauer = Rest.merged(akt.map(e => [B(e), EW(e)])), aus = es.length - akt.length;
     let inner = `<div><div class="b">${Fmt.monat(new Date(k))}</div><div class="mini">${akt.length} Einsätze · ${Fmt.dauer(dauer)} · ${ts.length} Bereitschaftstage${aus ? ` · ${aus} ausgeblendet` : ''}</div><div class="mini tert">brutto ≈ ${Fmt.euro(v.gesamt)}</div></div>`;
     inner += es.map((e, i) => einsatzZeile(e, akt, s) + (i < es.length - 1 ? '<hr>' : '')).join('');
-    if (ts.length) inner += '<hr>' + ts.map(t => { const p = Verdienst.pauschale(t, s); return `<div class="tag" oncontextmenu="return false"><span class="m">☾</span><span class="mono">${Fmt.kurz(new Date(t.beginn))}–${Fmt.zeit(new Date(t.ende))}</span><span class="mini">${p.detail.split(' · ')[0]}</span><span style="flex:1"></span><span class="mini tert mono">${Fmt.euro(Verdienst.summe(p.b))}</span><button class="btn rand klein" onclick="tagLoeschen('${t.id}')">✕</button></div>`; }).join('');
+    if (ts.length) inner += '<hr>' + ts.map(t => { const p = Verdienst.pauschale(t, s); return `<div class="tag"><span class="m">☾</span><span class="mono">${Fmt.kurz(new Date(t.beginn))}–${Fmt.zeit(new Date(t.ende))}</span><span class="mini">${p.detail.split(' · ')[0]}</span><span style="flex:1"></span><span class="mini tert mono">${Fmt.euro(Verdienst.summe(p.b))}</span><button class="btn rand klein" onclick="tagLoeschen('${t.id}')">✕</button></div>`; }).join('');
     h += karte(inner);
   }
   if (DB.einsaetze.length) h += karte(`<button class="btn" ${s.mail ? '' : 'disabled'} onclick="Mail.oeffne(S().mail,'', 'Rufbereitschaft-Einsatzprotokoll', Mail.protokoll(S()))">✉ Liste per Mail an mich</button>
-    <div class="row"><button class="btn rand" onclick="kopieren()">${UI.kopiert ? 'Kopiert ✓' : 'Kopieren'}</button><button class="btn rand" style="color:var(--zuschlag)" onclick="allesLoeschen()">Leeren</button></div>
+    <div class="row"><button class="btn rand" onclick="kopieren()">${UI.kopiert ? 'Kopiert ✓' : 'Kopieren'}</button><button class="btn rand" style="color:#ff6b66" onclick="allesLoeschen()">Leeren</button></div>
     <div class="mini">Der Ausgleichs-/Verschiebungshinweis der aktuellen Nacht wird vorsorglich immer mit protokolliert. Ausgeblendete Einträge sind nicht enthalten.</div>`, 'Export');
   return h;
 }
 function einsatzZeile(e, akt, s) {
-  if (e.aktiv === false) return `<div class="ausgeblendet" onclick="aktivieren('${e.id}')"><span>⊘</span><div style="flex:1"><div class="t mono">${Fmt.kurz(B(e))}–${Fmt.zeit(E(e))} · ${TYP[e.typ]}</div><div class="u">Nicht verwendet${e.hinweis ? ' – ' + esc(e.hinweis) : ''} · tippen zum Verwenden</div></div><span style="color:var(--pauschale);font-size:20px">↺</span><button class="btn rand klein" onclick="event.stopPropagation();loeschen('${e.id}')">✕</button></div>`;
+  if (e.aktiv === false) return `<div class="ausgeblendet" onclick="aktivieren('${e.id}')"><span>⊘</span><div style="flex:1"><div class="t mono">${Fmt.kurz(B(e))}–${Fmt.zeit(E(e))} · ${TYP[e.typ]}</div><div class="u">Nicht verwendet${e.hinweis ? ' – ' + esc(e.hinweis) : ''} · tippen zum Verwenden</div></div><span style="font-size:20px">↺</span><button class="btn rand klein" onclick="event.stopPropagation();loeschen('${e.id}')">✕</button></div>`;
   const p = Verdienst.inanspruchnahme(e, s), bew = Verdienst.bewertet(e), koll = RB.kollision(B(e), EW(e), e.id);
-  return `<div class="eintrag"><div class="kopfz"><span class="mono">${Fmt.kurz(B(e))}–${e.laeuft ? 'läuft' : Fmt.zeit(E(e))}</span><span class="mini tert mono">${Fmt.euro(Verdienst.summe(p.b))}</span></div>
+  return `<div class="eintrag"><div class="kopfz"><span class="mono">${Fmt.kurz(B(e))}–${e.laeuft ? 'läuft' : Fmt.zeit(E(e))}</span><span class="row" style="flex:0;gap:6px"><span class="mini tert mono">${Fmt.euro(Verdienst.summe(p.b))}</span><button class="btn rand klein" title="Ausblenden" onclick="ausblenden('${e.id}')">⊘</button><button class="btn rand klein" onclick="loeschen('${e.id}')">✕</button></span></div>
     <div class="meta">${typChip(e.typ)}<span>${Fmt.dauer(dauerMin(e))}</span>${e.laeuft ? chip('läuft', 'rot') : ''}${koll ? chip('Überschneidung', 'rot') : ''}${e.typ === 'vorort' && bew !== dauerMin(e) ? `<span class="tert">→ ${Fmt.dauer(bew)} gezählt</span>` : ''}${e.quelle === 'foto' ? '<span>📷</span>' : ''}
-    <span style="flex:1"></span><button class="btn rand klein" title="Ausblenden" onclick="ausblenden('${e.id}')">⊘</button><button class="btn rand klein" onclick="loeschen('${e.id}')">✕</button></div>
+    </div>
     <div class="mini tert">${Verdienst.zerlegung(p.b)}</div></div>`;
 }
 function tagHinzu() { const s = S(), f = RB.fensterAnTag(new Date(UI.neuerTag + 'T12:00'), s); if (RB.istDublette(f.beginn)) return; DB.tage.push({ id: uid(), beginn: f.beginn.toISOString(), ende: f.ende.toISOString(), quelle: 'manuell' }); save(); render(); }
@@ -483,7 +498,7 @@ function viewVerdienst() {
   h += `<div class="mini" style="padding:0 8px">Berechnung nach §8/§9 TV-Ärzte/TdL. Entgelttabellen 40 h (Marburger Bund, Tarifrunde 2026): je Dienstdatum automatisch die gültige Tabelle. Stundenentgelt = Monatsentgelt ÷ ${Entgelttabelle.divisor.toFixed(2).replace('.', ',')}. Feiertage ${s.bundesland}. Orientierungswert vor Steuern – maßgeblich ist die Abrechnung des Arbeitgebers.</div>`;
   return h;
 }
-const C = { pauschale: '#5c94ff', grund: '#33cc8f', ueberstd: '#ffb840', zuschlag: '#ff6b66', technisch: '#40bfd9', vorort: '#ff9e33' };
+const C = new Proxy({}, { get: (_, k) => getComputedStyle(document.documentElement).getPropertyValue('--' + k).trim() });
 function segmente(b) { return [['Pauschalen', b.pauschale, C.pauschale], ['Grundentgelt Einsätze', b.grund, C.grund], ['Überstundenzuschlag 15 %', b.ueberstd, C.ueberstd], ['Zeitzuschläge (Nacht/So/Feiertag)', b.zuschlag, C.zuschlag]].filter(x => x[1] > .005).map(x => ({ n: x[0], b: x[1], f: x[2] })); }
 function verlauf12(m, s) { const out = []; for (let o = -11; o <= 0; o++) { const mm = addMonths(m, o); out.push({ m: mm, b: Verdienst.monat(mm, s).bausteine }); } return out; }
 function chartsVerdienst() {
@@ -497,7 +512,7 @@ function chartsVerdienst() {
 }
 function barOpts(o) {
   return { maintainAspectRatio: false, animation: { duration: 250 }, scales: { x: { stacked: !!o.stacked, grid: { display: false }, ticks: o.xt || {} }, y: { stacked: !!o.stacked, beginAtZero: true, grid: { color: 'rgba(128,128,128,.18)' }, ticks: { callback: o.y || (x => x), precision: 0 } } },
-    plugins: { legend: { display: o.legend !== false, position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 8, padding: 14 } }, tooltip: { enabled: o.tip !== false, callbacks: o.tip ? { label: o.tip } : {} } }, onClick: o.onClick, borderRadius: 3 };
+    plugins: { legend: { display: o.legend !== false, position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 8, padding: 14 } }, tooltip: { enabled: o.tip !== false, callbacks: o.tip ? { label: o.tip } : {} } }, onClick: o.onClick, borderRadius: 3, datasets: { bar: { borderColor: 'rgba(0,0,0,.25)', borderWidth: 1 } } };
 }
 
 // ============================================================ Statistik
@@ -730,7 +745,7 @@ function uebernehmen() {
 const LAENDER = [['NW', 'Nordrhein-Westfalen'], ['BW', 'Baden-Württemberg'], ['BY', 'Bayern'], ['BE', 'Berlin'], ['BB', 'Brandenburg'], ['HB', 'Bremen'], ['HH', 'Hamburg'], ['HE', 'Hessen'], ['MV', 'Mecklenburg-Vorpommern'], ['NI', 'Niedersachsen'], ['RP', 'Rheinland-Pfalz'], ['SL', 'Saarland'], ['SN', 'Sachsen'], ['ST', 'Sachsen-Anhalt'], ['SH', 'Schleswig-Holstein'], ['TH', 'Thüringen']];
 let sheetMeldung = '';
 function sheet(open) { $('sheet').classList.toggle('on', open); if (open) renderSheet(); else render(); }
-function set(k, v) { S()[k] = v; if (k === 'entgeltgruppe') S().stufe = Math.min(S().stufe, Math.max(1, Entgelttabelle.stufen(v))); save(); sheetMeldung = 'Gespeichert – gilt sofort in allen Reitern'; renderSheet(); setTimeout(() => { sheetMeldung = ''; if ($('sheet').classList.contains('on')) renderSheet(); }, 2200); }
+function set(k, v) { S()[k] = v; if (k === 'entgeltgruppe') S().stufe = Math.min(S().stufe, Math.max(1, Entgelttabelle.stufen(v))); save(true); sheetMeldung = 'Gespeichert – gilt sofort in allen Reitern'; renderSheet(); setTimeout(() => { sheetMeldung = ''; if ($('sheet').classList.contains('on')) renderSheet(); }, 2200); }
 function renderSheet() {
   const s = S(), r = (l, inner) => `<div class="r"><span>${l}</span>${inner}</div>`, sel = (k, opts) => `<select onchange="set('${k}',${typeof opts[0][0] === 'number' ? '+' : ''}this.value)">${opts.map(([v, l]) => `<option value="${v}" ${s[k] == v ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
   const tx = (k, ph, type = 'text') => `<input type="${type}" placeholder="${ph}" value="${esc(s[k])}" onchange="set('${k}',this.value)" autocapitalize="none">`;
@@ -743,7 +758,7 @@ function renderSheet() {
     <div class="sec-t">Ruhezeit</div><div class="seg"><button class="${s.refRuheStunden === 10 ? 'on' : ''}" onclick="set('refRuheStunden',10)">10 Stunden</button><button class="${s.refRuheStunden === 11 ? 'on' : ''}" onclick="set('refRuheStunden',11)">11 Stunden</button></div>
     ${r('Regulärer Dienstbeginn', `<input type="time" value="${s.dienstbeginn}" onchange="set('dienstbeginn',this.value)">`)}${r('Regelarbeitszeit-Ende (Mo–Fr)', `<input type="time" value="${s.dienstende}" onchange="set('dienstende',this.value)">`)}
     <div class="sec-t">Meldungen</div>${r('Mein Name', tx('name', 'Name'))}${r('Meine E-Mail', tx('mail', 'für Protokoll an mich', 'email'))}${r('Verteiler', tx('empfaenger', 'Mailadressen, mit Komma', 'email'))}
-    <div class="sec-t">Backup</div><button class="btn rand" onclick="backupExport()">⇪ Backup erstellen &amp; teilen (${DB.einsaetze.length} Einsätze, ${DB.tage.length} Tage)</button>
+    <div class="sec-t">Backup</div><div class="hint">${DB.meta && DB.meta.letztesBackup ? "Letztes Backup: " + Fmt.kurz(new Date(DB.meta.letztesBackup)) : "Noch kein Backup erstellt"}</div><button class="btn rand" onclick="backupExport()">⇪ Backup erstellen &amp; teilen (${DB.einsaetze.length} Einsätze, ${DB.tage.length} Tage)</button>
     <label class="btn rand" style="display:block;text-align:center">⇩ Backup wiederherstellen (Datei wählen)<input type="file" accept=".json,application/json" hidden onchange="backupImport(this)"></label>
     <div class="hint">JSON-Datei mit allen Einsätzen, Bereitschaftstagen und Einstellungen. Beim Wiederherstellen bleiben vorhandene Einträge erhalten; Dubletten werden übersprungen, Überschneidungen zusammengeführt. Da die Daten nur im Browser dieses Telefons liegen, regelmäßig ein Backup per Mail an dich selbst schicken.</div>
     <div class="hint">Alle Daten bleiben lokal auf diesem Gerät. Entgelttabellen TdL 40 h (Marburger Bund, Tarifrunde 2026) – je Dienstdatum automatisch die gültige Tabelle.</div>
@@ -751,9 +766,10 @@ function renderSheet() {
 }
 async function backupExport() {
   const d = { app: 'Zeiterfassung', version: 1, exportiert: new Date().toISOString(), einsaetze: aktive().map(e => ({ beginn: e.beginn, ende: e.ende, typ: e.typ, quelle: e.quelle || 'manuell' })), tage: DB.tage.map(t => ({ beginn: t.beginn, ende: t.ende, quelle: t.quelle || 'manuell' })), einstellungen: S() };
+  DB.meta.letztesBackup = new Date().toISOString(); DB.meta.geaendert = 0; save(true);
   const name = `Zeiterfassung-Backup-${toDateInput(new Date())}.json`, blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' }), file = new File([blob], name, { type: 'application/json' });
-  if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: name }); return; } catch (e) { if (e.name === 'AbortError') return; } }
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+  if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: name, text: 'Zeiterfassung-Backup – im Teilen-Menü „Mail" wählen und an dich selbst schicken.' }); render(); return; } catch (e) { if (e.name === 'AbortError') { render(); return; } } }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); render();
 }
 function backupImport(inp) {
   const f = inp.files && inp.files[0]; if (!f) return; const r = new FileReader();
