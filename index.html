@@ -76,6 +76,7 @@ input[type=datetime-local],input[type=date],input[type=time]{width:100%}
 .dot{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:6px}
 .dot.gruen{background:#34c759;box-shadow:0 0 6px #34c759}.dot.orange{background:#ff9500;box-shadow:0 0 6px #ff9500}.dot.rot{background:#ff453a;box-shadow:0 0 6px #ff453a}
 .hero{font-size:60px;font-weight:700;line-height:1;margin:4px 0}
+.ort{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--txt2)}.ort.drin{color:var(--mb)}.ort.drin .ico{animation:puls 2.4s ease-in-out infinite}.ort.warte .ico{animation:puls 1.2s ease-in-out infinite}@keyframes puls{0%,100%{opacity:1}50%{opacity:.35}}
 .taxi{font-size:18px;font-weight:700;color:var(--mb);white-space:nowrap}.taxi small{display:block;font-size:10.5px;font-weight:400;color:var(--txt2)}
 .gruenT{color:#34c759}.orangeT{color:#ff9500}.rotT{color:#ff453a}
 details summary{cursor:pointer;font-size:13px;font-weight:700;list-style:none}
@@ -169,13 +170,13 @@ const TYP = { technisch: 'Technisch (daheim)', vorort: 'Vor Ort' };
 // ============================================================ Daten (lokal im Browser)
 function defaultSettings() {
   return { entgeltgruppe: 'Ä3', stufe: 1, dienstbeginn: '08:00', dienstende: '16:30', refRuheStunden: 11, name: '', mail: '', empfaenger: '',
-    bundesland: 'NW', ohneFreizeitausgleich: true, darstellung: 'dunkel' };
+    bundesland: 'NW', ohneFreizeitausgleich: true, darstellung: 'dunkel', ortLat: null, ortLon: null, ortRadius: 400, ortName: 'Arbeitsstätte', ortAktiv: false };
 }
 let DB = { einsaetze: [], tage: [], s: defaultSettings(), meta: { letztesBackup: null, geaendert: 0 } };
 function load() {
   try { const j = JSON.parse(localStorage.getItem(LS) || 'null'); if (j) { DB = j; DB.s = Object.assign(defaultSettings(), j.s || {}); DB.meta = Object.assign({ letztesBackup: null, geaendert: 0 }, j.meta || {}); } } catch (e) {}
 }
-function save(stumm) { if (!stumm) DB.meta.geaendert = (DB.meta.geaendert || 0) + 1; try { localStorage.setItem(LS, JSON.stringify(DB)); } catch (e) { alert('Speichern fehlgeschlagen: ' + e); } }
+function save(stumm) { if (!stumm) { DB.meta.geaendert = (DB.meta.geaendert || 0) + 1; if (!DB.meta.ersteAenderung) DB.meta.ersteAenderung = new Date().toISOString(); } try { localStorage.setItem(LS, JSON.stringify(DB)); } catch (e) { alert('Speichern fehlgeschlagen: ' + e); } }
 // Einsatz: {id, beginn, ende (ISO), typ, quelle, aktiv, laeuft, hinweis}
 const B = e => new Date(e.beginn), E = e => new Date(e.ende);
 const EW = e => e.laeuft ? new Date(Math.max(Date.now(), B(e).getTime() + 3 * 60000)) : E(e);
@@ -316,7 +317,7 @@ const Mail = {
   },
   protokoll(s) {
     const es = aktive().sort((a, b) => B(a) - B(b)), lines = ['Rufbereitschaft – Einsatzprotokoll', ''];
-    for (const e of es) lines.push(`${Fmt.kurz(B(e))}–${Fmt.zeit(EW(e))}  (${Fmt.dauer(dauerMin(e))})  ${TYP[e.typ]}`);
+    for (const e of es) { const f = Geo.fazit(e); lines.push(`${Fmt.kurz(B(e))}–${Fmt.zeit(EW(e))}  (${Fmt.dauer(dauerMin(e))})  ${TYP[e.typ]}${f && f.ok ? `  [Standort: ${f.name} ${Fmt.zeit(f.von)}–${Fmt.zeit(f.bis)}]` : ''}`); }
     lines.push('', `Summe: ${es.length} Einsätze, ${Fmt.dauer(Rest.merged(es.map(e => [B(e), EW(e)])))}`);
     if (DB.tage.length) lines.push(`Rufbereitschaftstage: ${DB.tage.length}`);
     const r = Rest.compute(es, s), refH = s.refRuheStunden;
@@ -326,6 +327,38 @@ const Mail = {
   },
 };
 
+
+// ============================================================ Standort (dezent): Vermerke während Vor-Ort-Einsätzen
+const Geo = {
+  dist(a, b, c, d) { const R = 6371000, r = x => x * Math.PI / 180, dLat = r(c - a), dLon = r(d - b); const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a)) * Math.cos(r(c)) * Math.sin(dLon / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); },
+  aktiv() { const s = S(); return s.ortAktiv && s.ortLat != null && 'geolocation' in navigator; },
+  hole() { return new Promise((res, rej) => navigator.geolocation.getCurrentPosition(p => res(p.coords), rej, { enableHighAccuracy: true, timeout: 15000, maximumAge: 120000 })); },
+  /// Vermerk anhängen (höchstens alle 10 min, außer erzwungen bei Start/Ende)
+  async vermerke(e, erzwingen) {
+    if (!this.aktiv() || !e || e.typ !== 'vorort') return;
+    const orte = e.orte || []; const letzter = orte[orte.length - 1];
+    if (!erzwingen && letzter && Date.now() - new Date(letzter.t) < 10 * 60000) return;
+    try { const c = await this.hole(), s = S(); const d = Math.round(this.dist(c.latitude, c.longitude, s.ortLat, s.ortLon));
+      orte.push({ t: new Date().toISOString(), lat: +c.latitude.toFixed(5), lon: +c.longitude.toFixed(5), d, acc: Math.round(c.accuracy || 0) }); e.orte = orte; save(true);
+      const el = $('laufOrt'); if (el) el.outerHTML = this.laufZeile(e);
+    } catch (_) {}
+  },
+  drin(o) { return o.d <= (S().ortRadius || 400) + Math.min(o.acc || 0, 100); },
+  /// Zusammenfassung für Protokoll: Zeitraum der Messungen an der Arbeitsstätte
+  fazit(e) { const o = e.orte || []; if (!o.length) return null; const drin = o.filter(x => this.drin(x));
+    if (drin.length) return { ok: true, von: new Date(drin[0].t), bis: new Date(drin[drin.length - 1].t), n: drin.length, name: S().ortName || 'Arbeitsstätte' };
+    const min = Math.min(...o.map(x => x.d)); return { ok: false, min, n: o.length }; },
+  laufZeile(e) { const f = this.fazit(e); const s = S();
+    if (!this.aktiv() || e.typ !== 'vorort') return '<span id="laufOrt"></span>';
+    if (!f) return `<span id="laufOrt" class="ort warte">${ico('pin', 14)}Standort wird ermittelt …</span>`;
+    const letzter = e.orte[e.orte.length - 1], d = letzter.d;
+    return f.ok && this.drin(letzter) ? `<span id="laufOrt" class="ort drin">${ico('pin', 14)}an der ${esc(s.ortName || 'Arbeitsstätte')} · ${d < 1000 ? d + ' m' : (d / 1000).toFixed(1) + ' km'}</span>`
+      : `<span id="laufOrt" class="ort">${ico('pin', 14)}${d < 1000 ? d + ' m' : (d / 1000).toFixed(1) + ' km'} entfernt${f.ok ? ' · vorher an der ' + esc(s.ortName || 'Arbeitsstätte') : ''}</span>`; },
+  protokollZeile(e) { const f = this.fazit(e); if (!f) return '';
+    return f.ok ? `<span class="ort drin mini">${ico('pin', 12)}${esc(f.name)} bestätigt ${Fmt.zeit(f.von)}–${Fmt.zeit(f.bis)}</span>` : `<span class="ort mini">${ico('pin', 12)}außerhalb (≥ ${f.min < 1000 ? f.min + ' m' : (f.min / 1000).toFixed(1) + ' km'})</span>`; },
+  async arbeitsstaetteSetzen() { try { const c = await this.hole(); const s = S(); s.ortLat = +c.latitude.toFixed(5); s.ortLon = +c.longitude.toFixed(5); s.ortAktiv = true; save(true); sheetMeldung = `Arbeitsstätte gespeichert (Genauigkeit ±${Math.round(c.accuracy)} m)`; renderSheet(); }
+    catch (e) { sheetMeldung = 'Standort nicht verfügbar – bitte Standortzugriff für Safari/diese App erlauben.'; renderSheet(); } },
+};
 // ============================================================ UI-Zustand
 const UI = { tab: localStorage.getItem('zeiterfassung.tab') || 'rechner', form: { typ: 'technisch', beginn: toInput(new Date()), ende: toInput(new Date()) }, meldung: '',
   verdienstMonat: monatStart(new Date()), statMonat: monatStart(new Date()), zeitraum: 'monat', masz: 'anrufe', jahrMasz: 'anzahl', sel: {},
@@ -338,7 +371,7 @@ const ICO = {
   cross: '<path d="M10 4h4v6h6v4h-6v6h-4v-6H4v-4h6z"/>', stop: '<rect x="6" y="6" width="12" height="12" rx="2"/>', mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
   swap: '<path d="M7 7h11m0 0l-3-3m3 3l-3 3M17 17H6m0 0l3 3m-3-3l3-3"/>', up: '<path d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16"/>', down: '<path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>',
   plus: '<path d="M12 5v14M5 12h14"/>', eye: '<path d="M3 3l18 18M10.6 10.6A2 2 0 0013.4 13.4M9.9 5.1A10 10 0 0121 12a10.5 10.5 0 01-2.3 3.3M6.6 6.6A10.6 10.6 0 003 12a10 10 0 0014.1 4.1"/>',
-  x: '<path d="M6 6l12 12M18 6L6 18"/>', undo: '<path d="M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3"/>', cam: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3"/>', warn: '<path d="M12 3l10 18H2zM12 10v4m0 3h.01"/>',
+  x: '<path d="M6 6l12 12M18 6L6 18"/>', pin: '<path d="M12 21s-7-6.2-7-11.5a7 7 0 0114 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>', undo: '<path d="M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3"/>', cam: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3"/>', warn: '<path d="M12 3l10 18H2zM12 10v4m0 3h.01"/>',
 };
 const ico = (n, size = 18) => `<svg class="ico" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICO[n]}</svg>`;
 const logoSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="12" r="8"/><path d="M11 7v5l3 2"/><path d="M16 18l2 2 4-4" stroke-width="2.4"/></svg>`;
@@ -348,17 +381,24 @@ const chip = (t, cls) => `<span class="chip ${cls}">${t}</span>`;
 const typChip = typ => chip(TYP[typ], typ);
 
 
-// Backup-Mahnung: erscheint, wenn seit dem letzten Backup ≥ 7 Tage vergangen sind und Daten geändert wurden,
-// oder wenn seit dem letzten Backup ≥ 5 Änderungen anstehen. Verschwindet nach dem Teilen.
-function backupMahnung() {
-  const m = DB.meta || {}; if (!DB.einsaetze.length && !DB.tage.length) return '';
-  const tage = m.letztesBackup ? Math.floor((Date.now() - new Date(m.letztesBackup)) / 86400000) : null;
-  const faellig = (m.geaendert || 0) > 0 && (tage === null || tage >= 7 || m.geaendert >= 5);
-  if (!faellig) return '';
-  const txt = tage === null ? 'Noch nie gesichert' : `Letztes Backup vor ${tage} Tag${tage === 1 ? '' : 'en'}`;
-  return `<div class="karte mahnung"><div class="b">${ico('warn')}Daten sichern</div><div class="mini">${txt} · ${m.geaendert} Änderung${m.geaendert === 1 ? '' : 'en'} seit dem letzten Backup. Die Daten liegen nur in diesem Browser – bitte das Backup per Mail an dich selbst schicken.</div>
-    <button class="btn" onclick="backupExport()">${ico('mail')}Backup jetzt per Mail sichern</button><button class="btn rand klein" onclick="DB.meta.geaendert=0;save(true);render()">Später erinnern</button></div>`;
+// Backup-Hinweis: dezentes Pop-up, frühestens 1 Tag nach der ersten ungesicherten Änderung
+// (bzw. nach dem letzten Backup), höchstens einmal pro Tag. Keine Dauer-Karte.
+function backupHinweisPruefen() {
+  const m = DB.meta || {}; if (!(m.geaendert > 0)) return;
+  const basis = m.letztesBackup || m.ersteAenderung; if (!basis) return;
+  const tage = (Date.now() - new Date(basis)) / 86400000; if (tage < 1) return;
+  if (m.letzterHinweis && (Date.now() - new Date(m.letzterHinweis)) < 86400000) return;
+  m.letzterHinweis = new Date().toISOString(); save(true);
+  const txt = m.letztesBackup ? `Letztes Backup vor ${Math.floor(tage)} Tag${Math.floor(tage) === 1 ? '' : 'en'}` : 'Noch kein Backup';
+  const el = document.createElement('div'); el.className = 'sheet on'; el.id = 'popup';
+  el.innerHTML = `<div class="inner" style="text-align:center;gap:10px"><div class="b" style="font-size:17px">${ico('mail', 20)}Daten sichern?</div>
+    <div class="small sec">${txt} · ${m.geaendert} ungesicherte Änderung${m.geaendert === 1 ? '' : 'en'}. Die Daten liegen nur auf diesem Telefon.</div>
+    <button class="btn" onclick="document.getElementById('popup').remove();backupExport()">${ico('mail')}Per Mail sichern</button>
+    <button class="btn rand" onclick="document.getElementById('popup').remove()">Morgen erinnern</button></div>`;
+  el.addEventListener('click', e => { if (e.target === el) el.remove(); });
+  document.body.appendChild(el);
 }
+function backupMahnung() { return ''; }
 function render() {
   document.documentElement.dataset.theme = S().darstellung === 'system' ? (matchMedia('(prefers-color-scheme: light)').matches ? 'hell' : 'dunkel') : S().darstellung;
   const v = { rechner: viewRechner, protokoll: viewProtokoll, import: viewImport, verdienst: viewVerdienst, statistik: viewStatistik }[UI.tab] || viewRechner;
@@ -385,6 +425,7 @@ function viewRechner() {
       <div class="row" style="align-items:baseline;justify-content:center;gap:14px"><div class="hero mono" id="laufDauer" style="font-size:44px">${Fmt.dauer(dauerMin(l))}</div>
         <div class="taxi" id="laufTaxi">${taxiText(l)}</div></div>
       <div class="row" style="justify-content:center">${typChip(l.typ)}<span class="small sec">seit ${Fmt.zeit(B(l))} Uhr</span></div>
+      <div>${Geo.laufZeile(l)}</div>
       <details class="left"><summary class="mini" style="text-align:center">Beginn anpassen (vergessen zu drücken?)</summary>
         <div class="row" style="margin-top:8px"><button class="btn rand klein" onclick="beginnVerschieben('${l.id}',-5)">−5 min</button><button class="btn rand klein" onclick="beginnVerschieben('${l.id}',-10)">−10 min</button><button class="btn rand klein" onclick="beginnVerschieben('${l.id}',-30)">−30 min</button><button class="btn rand klein" onclick="beginnVerschieben('${l.id}',-60)">−1 h</button></div>
         <div class="feld" style="margin-top:8px"><label>Beginn</label><input type="datetime-local" value="${toInput(B(l))}" onchange="beginnSetzen('${l.id}',this.value)"></div></details>
@@ -434,10 +475,11 @@ function taxiText(l) { const p = Verdienst.inanspruchnahme(l, S()); return `${Fm
 function beginnVerschieben(id, min) { const e = DB.einsaetze.find(x => x.id === id); if (!e) return; e.beginn = addMin(B(e), min).toISOString(); save(); render(); }
 function beginnSetzen(id, v) { const e = DB.einsaetze.find(x => x.id === id), d = new Date(v); if (!e || isNaN(d) || d > new Date()) { render(); return; } e.beginn = d.toISOString(); save(); render(); }
 function starten(typ) { const j = new Date(); const e = { id: uid(), beginn: j.toISOString(), ende: addMin(j, 3).toISOString(), typ, quelle: 'manuell', aktiv: true, laeuft: true, hinweis: '' };
-  DB.einsaetze.push(e); RB.ergaenzeTag(e, S()); save(); render(); }
-function typWechsel(id) { const e = DB.einsaetze.find(x => x.id === id); if (!e) return; e.typ = e.typ === 'vorort' ? 'technisch' : 'vorort'; save(); render(); }
-function beenden(id) {
+  DB.einsaetze.push(e); RB.ergaenzeTag(e, S()); save(); render(); Geo.vermerke(e, true); }
+function typWechsel(id) { const e = DB.einsaetze.find(x => x.id === id); if (!e) return; e.typ = e.typ === 'vorort' ? 'technisch' : 'vorort'; save(); render(); Geo.vermerke(e, true); }
+async function beenden(id) {
   const l = DB.einsaetze.find(x => x.id === id); if (!l) return;
+  await Geo.vermerke(l, true);
   const ende = new Date(Math.max(Date.now(), B(l).getTime() + 3 * 60000)); l.ende = ende.toISOString(); l.laeuft = false;
   const k = RB.kollision(B(l), ende, l.id);
   if (k) { const kb = new Date(Math.min(B(k), B(l))), ke = new Date(Math.max(EW(k), ende)); k.beginn = kb.toISOString(); k.ende = ke.toISOString(); if (l.typ === 'vorort') k.typ = 'vorort';
@@ -453,7 +495,7 @@ function speichern() {
   else m = `Überschneidung → zusammengeführt zu ${Fmt.kurz(B(erg.k))}–${Fmt.zeit(E(erg.k))}. Der Einzeleintrag bleibt ausgeblendet im Protokoll (dort per Tipp wieder verwendbar).`;
   UI.form.ende = toInput(e); UI.meldung = m; save(); render(); setTimeout(() => { UI.meldung = ''; if (UI.tab === 'rechner') render(); }, 5000);
 }
-setInterval(() => { const el = $('laufDauer'), t = $('laufTaxi'); const l = aktive().find(e => e.laeuft); if (el && l) { el.textContent = Fmt.dauer(dauerMin(l)); if (t) t.innerHTML = taxiText(l); } }, 20000);
+setInterval(() => { const el = $('laufDauer'), t = $('laufTaxi'); const l = aktive().find(e => e.laeuft); if (el && l) { el.textContent = Fmt.dauer(dauerMin(l)); if (t) t.innerHTML = taxiText(l); Geo.vermerke(l, false); } }, 20000);
 
 // ============================================================ Protokoll
 function viewProtokoll() {
@@ -488,7 +530,7 @@ function einsatzZeile(e, akt, s) {
   return `<div class="eintrag"><div class="kopfz"><span class="mono">${Fmt.kurz(B(e))}–${e.laeuft ? 'läuft' : Fmt.zeit(E(e))}</span><span class="row" style="flex:0;gap:6px"><span class="mini tert mono">${Fmt.euro(Verdienst.summe(p.b))}</span><button class="btn rand klein" title="Ausblenden" onclick="ausblenden('${e.id}')">${ico('eye',15)}</button><button class="btn rand klein" onclick="loeschen('${e.id}')">${ico('x',15)}</button></span></div>
     <div class="meta">${typChip(e.typ)}<span>${Fmt.dauer(dauerMin(e))}</span>${e.laeuft ? chip('läuft', 'rot') : ''}${koll ? chip('Überschneidung', 'rot') : ''}${e.typ === 'vorort' && bew !== dauerMin(e) ? `<span class="tert">→ ${Fmt.dauer(bew)} gezählt</span>` : ''}${e.quelle === 'foto' ? ico('cam',14) : ''}
     </div>
-    <div class="mini tert">${Verdienst.zerlegung(p.b)}</div></div>`;
+    <div class="mini tert">${Verdienst.zerlegung(p.b)}</div>${Geo.fazit(e) ? `<div>${Geo.protokollZeile(e)}</div>` : ''}</div>`;
 }
 function tagHinzu() { const s = S(), f = RB.fensterAnTag(new Date(UI.neuerTag + 'T12:00'), s); if (RB.istDublette(f.beginn)) return; DB.tage.push({ id: uid(), beginn: f.beginn.toISOString(), ende: f.ende.toISOString(), quelle: 'manuell' }); save(); render(); }
 function tagLoeschen(id) { if (!confirm('Bereitschaftstag löschen?')) return; DB.tage = DB.tage.filter(t => t.id !== id); save(); render(); }
@@ -777,6 +819,12 @@ function renderSheet() {
     ${r('Bundesland (Feiertage)', sel('bundesland', LAENDER))}${r('Einsätze ohne Freizeitausgleich (Auszahlung)', `<input type="checkbox" ${s.ohneFreizeitausgleich ? 'checked' : ''} onchange="set('ohneFreizeitausgleich',this.checked)">`)}
     <div class="sec-t">Ruhezeit</div><div class="seg"><button class="${s.refRuheStunden === 10 ? 'on' : ''}" onclick="set('refRuheStunden',10)">10 Stunden</button><button class="${s.refRuheStunden === 11 ? 'on' : ''}" onclick="set('refRuheStunden',11)">11 Stunden</button></div>
     ${r('Regulärer Dienstbeginn', `<input type="time" value="${s.dienstbeginn}" onchange="set('dienstbeginn',this.value)">`)}${r('Regelarbeitszeit-Ende (Mo–Fr)', `<input type="time" value="${s.dienstende}" onchange="set('dienstende',this.value)">`)}
+    <div class="sec-t">Standort (dezent)</div>
+    ${r('Bei Vor-Ort-Einsätzen vermerken', `<input type="checkbox" ${s.ortAktiv ? 'checked' : ''} onchange="set('ortAktiv',this.checked)">`)}
+    ${r('Name der Arbeitsstätte', tx('ortName', 'z. B. Uniklinik'))}
+    ${r('Umkreis', `<select onchange="set('ortRadius',+this.value)">${[200, 400, 800, 1500].map(v => `<option value="${v}" ${s.ortRadius == v ? 'selected' : ''}>${v} m</option>`).join('')}</select>`)}
+    <button class="btn rand" onclick="Geo.arbeitsstaetteSetzen()">${ico('pin')}${s.ortLat != null ? 'Arbeitsstätte neu festlegen (aktuell ' + s.ortLat + ', ' + s.ortLon + ')' : 'Arbeitsstätte: hier festlegen (am Arbeitsplatz antippen)'}</button>
+    <div class="hint">Während ein Vor-Ort-Einsatz läuft und die App offen ist, wird etwa alle 10 Minuten sowie bei Start/Ende der Standort gemessen und nur die Entfernung zur Arbeitsstätte vermerkt. Im Protokoll erscheint dann dezent „bestätigt 17:42–19:10". Keine Hintergrund-Ortung, nichts verlässt das Telefon.</div>
     <div class="sec-t">Meldungen</div>${r('Mein Name', tx('name', 'Name'))}${r('Meine E-Mail', tx('mail', 'für Protokoll an mich', 'email'))}${r('Verteiler', tx('empfaenger', 'Mailadressen, mit Komma', 'email'))}
     <div class="sec-t">Backup</div><div class="hint">${DB.meta && DB.meta.letztesBackup ? "Letztes Backup: " + Fmt.kurz(new Date(DB.meta.letztesBackup)) : "Noch kein Backup erstellt"}</div><button class="btn rand" onclick="backupExport()">${ico('up')}Backup erstellen &amp; teilen (${DB.einsaetze.length} Einsätze, ${DB.tage.length} Tage)</button>
     <label class="btn rand" style="display:block;text-align:center">${ico('down')}Backup wiederherstellen (Datei wählen)<input type="file" accept=".json,application/json" hidden onchange="backupImport(this)"></label>
@@ -785,8 +833,8 @@ function renderSheet() {
     <button class="btn" onclick="sheet(false)">Fertig</button>`;
 }
 async function backupExport() {
-  const d = { app: 'Zeiterfassung', version: 1, exportiert: new Date().toISOString(), einsaetze: aktive().map(e => ({ beginn: e.beginn, ende: e.ende, typ: e.typ, quelle: e.quelle || 'manuell' })), tage: DB.tage.map(t => ({ beginn: t.beginn, ende: t.ende, quelle: t.quelle || 'manuell' })), einstellungen: S() };
-  DB.meta.letztesBackup = new Date().toISOString(); DB.meta.geaendert = 0; save(true);
+  const d = { app: 'Zeiterfassung', version: 1, exportiert: new Date().toISOString(), einsaetze: aktive().map(e => ({ beginn: e.beginn, ende: e.ende, typ: e.typ, quelle: e.quelle || 'manuell', orte: e.orte || undefined })), tage: DB.tage.map(t => ({ beginn: t.beginn, ende: t.ende, quelle: t.quelle || 'manuell' })), einstellungen: S() };
+  DB.meta.letztesBackup = new Date().toISOString(); DB.meta.geaendert = 0; DB.meta.ersteAenderung = null; save(true);
   const name = `Zeiterfassung-Backup-${toDateInput(new Date())}.json`, blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' }), file = new File([blob], name, { type: 'application/json' });
   if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: name, text: 'Zeiterfassung-Backup – im Teilen-Menü „Mail" wählen und an dich selbst schicken.' }); render(); return; } catch (e) { if (e.name === 'AbortError') { render(); return; } } }
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); render();
@@ -796,9 +844,9 @@ function backupImport(inp) {
   r.onload = () => { try { const d = JSON.parse(r.result); let n = 0, t = 0, ue = 0;
     if ((DB.einsaetze.length || DB.tage.length) && confirm('Vorhandene Einträge vor dem Wiederherstellen löschen (vollständig durch das Backup ersetzen)?\n\nAbbrechen = zusammenführen (Dubletten werden übersprungen).')) { DB.einsaetze = []; DB.tage = []; }
     for (const x of d.tage || []) { if (RB.istDublette(new Date(x.beginn))) { ue++; continue; } DB.tage.push({ id: uid(), beginn: x.beginn, ende: x.ende, quelle: x.quelle || 'manuell' }); t++; }
-    for (const x of d.einsaetze || []) { const b = new Date(x.beginn), e = new Date(x.ende); if (DB.einsaetze.some(y => Math.abs(B(y) - b) < 60000 && Math.abs(E(y) - e) < 60000)) { ue++; continue; } const rr = RB.einfuegen(b, e, x.typ === 'vorort' ? 'vorort' : 'technisch', x.quelle || 'manuell'); if (rr.art === 'neu') n++; else ue++; }
+    for (const x of d.einsaetze || []) { const b = new Date(x.beginn), e = new Date(x.ende); if (DB.einsaetze.some(y => Math.abs(B(y) - b) < 60000 && Math.abs(E(y) - e) < 60000)) { ue++; continue; } const rr = RB.einfuegen(b, e, x.typ === 'vorort' ? 'vorort' : 'technisch', x.quelle || 'manuell'); if (x.orte) rr.neu.orte = x.orte; if (rr.art === 'neu') n++; else ue++; }
     if (d.einstellungen && confirm('Auch die Einstellungen aus dem Backup übernehmen?')) DB.s = Object.assign(defaultSettings(), d.einstellungen);
-    DB.meta.letztesBackup = new Date().toISOString(); DB.meta.geaendert = 0; save(true); sheetMeldung = `Wiederhergestellt: ${n} Einsätze, ${t} Tage${ue ? `, ${ue} Dubletten übersprungen` : ''}`; renderSheet(); } catch (e) { alert('Wiederherstellen fehlgeschlagen: ' + e); } };
+    DB.meta.letztesBackup = new Date().toISOString(); DB.meta.geaendert = 0; DB.meta.ersteAenderung = null; save(true); sheetMeldung = `Wiederhergestellt: ${n} Einsätze, ${t} Tage${ue ? `, ${ue} Dubletten übersprungen` : ''}`; renderSheet(); } catch (e) { alert('Wiederherstellen fehlgeschlagen: ' + e); } };
   r.readAsText(f);
 }
 
@@ -808,6 +856,7 @@ $('zahnrad').onclick = () => sheet(true);
 $('sheet').addEventListener('click', e => { if (e.target === $('sheet')) sheet(false); });
 matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => render());
 render();
+setTimeout(backupHinweisPruefen, 1500);
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body>
