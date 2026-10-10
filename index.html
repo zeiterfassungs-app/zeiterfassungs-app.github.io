@@ -51,6 +51,7 @@ h1{font-size:30px;margin:0;font-weight:700}
 .btn:disabled{opacity:.5}
 .btn.tint{background:linear-gradient(135deg,var(--c1),var(--c2));color:var(--c3,var(--btnTxt))}
 .btn.grau{background:var(--feld);color:var(--txt);box-shadow:none}
+.btn.start{background:var(--feld);color:var(--txt);box-shadow:none;min-height:58px;white-space:nowrap;font-size:15px;padding:12px 8px;display:flex;align-items:center;justify-content:center}
 .btn.klein{padding:6px 10px;font-size:13px;width:auto;border-radius:10px}
 .ico{vertical-align:-4px;margin-right:4px}.btn .ico{margin-right:6px}.btn.klein .ico{margin:0;vertical-align:-3px}
 .btn.rand{background:var(--feld);color:var(--txt);box-shadow:none;font-weight:400}
@@ -75,6 +76,7 @@ input[type=datetime-local],input[type=date],input[type=time]{width:100%}
 .dot{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:6px}
 .dot.gruen{background:#34c759;box-shadow:0 0 6px #34c759}.dot.orange{background:#ff9500;box-shadow:0 0 6px #ff9500}.dot.rot{background:#ff453a;box-shadow:0 0 6px #ff453a}
 .hero{font-size:60px;font-weight:700;line-height:1;margin:4px 0}
+.taxi{font-size:18px;font-weight:700;color:var(--mb);white-space:nowrap}.taxi small{display:block;font-size:10.5px;font-weight:400;color:var(--txt2)}
 .gruenT{color:#34c759}.orangeT{color:#ff9500}.rotT{color:#ff453a}
 details summary{cursor:pointer;font-size:13px;font-weight:700;list-style:none}
 details summary::after{content:" ▸";color:var(--txt2)}details[open] summary::after{content:" ▾"}
@@ -380,14 +382,18 @@ function viewRechner() {
   let h = kopf('Zeiterfassung', 'Rufbereitschaft · TV-Ärzte') + backupMahnung();
   if (l) {
     h += `<div class="ergebnis laeuft"><div><span class="dot rot"></span><span class="b sec small">Einsatz läuft</span></div>
-      <div class="hero mono" id="laufDauer" style="font-size:48px">${Fmt.dauer(dauerMin(l))}</div>
-      <div class="row" style="justify-content:center">${typChip(l.typ)}<span class="small sec">seit ${Fmt.kurz(B(l))}</span></div>
+      <div class="row" style="align-items:baseline;justify-content:center;gap:14px"><div class="hero mono" id="laufDauer" style="font-size:44px">${Fmt.dauer(dauerMin(l))}</div>
+        <div class="taxi" id="laufTaxi">${taxiText(l)}</div></div>
+      <div class="row" style="justify-content:center">${typChip(l.typ)}<span class="small sec">seit ${Fmt.zeit(B(l))} Uhr</span></div>
+      <details class="left"><summary class="mini" style="text-align:center">Beginn anpassen (vergessen zu drücken?)</summary>
+        <div class="row" style="margin-top:8px"><button class="btn rand klein" onclick="beginnVerschieben('${l.id}',-5)">−5 min</button><button class="btn rand klein" onclick="beginnVerschieben('${l.id}',-10)">−10 min</button><button class="btn rand klein" onclick="beginnVerschieben('${l.id}',-30)">−30 min</button><button class="btn rand klein" onclick="beginnVerschieben('${l.id}',-60)">−1 h</button></div>
+        <div class="feld" style="margin-top:8px"><label>Beginn</label><input type="datetime-local" value="${toInput(B(l))}" onchange="beginnSetzen('${l.id}',this.value)"></div></details>
       <div class="row"><button class="btn grau" onclick="typWechsel('${l.id}')">${ico('swap')}${l.typ === 'vorort' ? 'technisch' : 'vor Ort'}</button>
       <button class="btn" onclick="beenden('${l.id}')">${ico('stop')}Beenden</button></div></div>`;
   } else {
     h += karte(`<div class="b">Das Telefon klingelt?</div><div class="mini">Einmal tippen – der Einsatz läuft mit. Beenden, sobald du fertig bist; auch Stunden später.</div>
-      <div class="row"><button class="btn" onclick="starten('technisch')">${ico('phone')}Start technisch</button>
-      <button class="btn grau" style="color:var(--mb);border-color:rgba(239,125,0,.4)" onclick="starten('vorort')">${ico('cross')}Start vor Ort</button></div>`);
+      <div class="row"><button class="btn start" onclick="starten('technisch')">${ico('phone')}Start technisch</button>
+      <button class="btn start" onclick="starten('vorort')"><span style="color:var(--mb)">${ico('cross')}</span>Start vor Ort</button></div>`);
   }
   const f = UI.form;
   h += karte(`<div class="seg"><button class="${f.typ === 'technisch' ? 'on' : ''}" onclick="UI.form.typ='technisch';render()">Technisch (daheim)</button><button class="${f.typ === 'vorort' ? 'on' : ''}" onclick="UI.form.typ='vorort';render()">Vor Ort</button></div>
@@ -422,6 +428,11 @@ function ergebnisKarte(r, s) {
     ${r.ampel === 'rot' ? z('Ausfallzeit (bezahlt)', Fmt.dauer(r.ausfallMin)) : ''}</div></details></div>`;
 }
 function melden() { const r = Rest.compute(aktive(), S()); if (!r) return; const m = Mail.meldung(r, S()); if (m) Mail.oeffne(S().empfaenger, S().mail, m.betreff, m.text); }
+
+/// Taximeter: Brutto des laufenden Einsatzes (vor Ort tariflich auf volle Stunde)
+function taxiText(l) { const p = Verdienst.inanspruchnahme(l, S()); return `${Fmt.euro(Verdienst.summe(p.b))}<small>bisher brutto${l.typ === 'vorort' ? ' · volle Std.' : ''}</small>`; }
+function beginnVerschieben(id, min) { const e = DB.einsaetze.find(x => x.id === id); if (!e) return; e.beginn = addMin(B(e), min).toISOString(); save(); render(); }
+function beginnSetzen(id, v) { const e = DB.einsaetze.find(x => x.id === id), d = new Date(v); if (!e || isNaN(d) || d > new Date()) { render(); return; } e.beginn = d.toISOString(); save(); render(); }
 function starten(typ) { const j = new Date(); const e = { id: uid(), beginn: j.toISOString(), ende: addMin(j, 3).toISOString(), typ, quelle: 'manuell', aktiv: true, laeuft: true, hinweis: '' };
   DB.einsaetze.push(e); RB.ergaenzeTag(e, S()); save(); render(); }
 function typWechsel(id) { const e = DB.einsaetze.find(x => x.id === id); if (!e) return; e.typ = e.typ === 'vorort' ? 'technisch' : 'vorort'; save(); render(); }
@@ -442,7 +453,7 @@ function speichern() {
   else m = `Überschneidung → zusammengeführt zu ${Fmt.kurz(B(erg.k))}–${Fmt.zeit(E(erg.k))}. Der Einzeleintrag bleibt ausgeblendet im Protokoll (dort per Tipp wieder verwendbar).`;
   UI.form.ende = toInput(e); UI.meldung = m; save(); render(); setTimeout(() => { UI.meldung = ''; if (UI.tab === 'rechner') render(); }, 5000);
 }
-setInterval(() => { const el = $('laufDauer'); const l = aktive().find(e => e.laeuft); if (el && l) el.textContent = Fmt.dauer(dauerMin(l)); }, 30000);
+setInterval(() => { const el = $('laufDauer'), t = $('laufTaxi'); const l = aktive().find(e => e.laeuft); if (el && l) { el.textContent = Fmt.dauer(dauerMin(l)); if (t) t.innerHTML = taxiText(l); } }, 20000);
 
 // ============================================================ Protokoll
 function viewProtokoll() {
