@@ -19,14 +19,14 @@
   --karte:rgba(255,255,255,.065);--rand:rgba(255,255,255,.14);--rand2:rgba(255,255,255,.06);
   --pauschale:#e6e9ec;--grund:#b4bac0;--ueberstd:#858c93;--zuschlag:#5b6269;--technisch:#dfe3e7;--vorort:#8a9199;
   --akzent1:#d9dde1;--akzent2:#9aa1a8;--tabbar:rgba(19,21,23,.74);--glow1:rgba(255,255,255,.07);--glow2:rgba(255,255,255,.045);
-  --feld:rgba(255,255,255,.08);--sel:rgba(255,255,255,.12);--btnTxt:#15181b;
+  --feld:rgba(255,255,255,.08);--sel:rgba(255,255,255,.12);--btnTxt:#15181b;--mb:#ef7d00;--mbSoft:rgba(239,125,0,.18);--vorort:#e0954a;
 }
 html[data-theme="hell"]{
   --bg1:#eceef0;--bg2:#dfe2e6;--txt:#1b1f23;--txt2:rgba(27,31,35,.62);--txt3:rgba(27,31,35,.42);
   --karte:rgba(255,255,255,.58);--rand:rgba(255,255,255,.95);--rand2:rgba(0,0,0,.06);
   --pauschale:#2b3035;--grund:#5c646c;--ueberstd:#8b939b;--zuschlag:#b9c0c7;--technisch:#3a4047;--vorort:#9aa2aa;
   --akzent1:#3a4047;--akzent2:#5c646c;--tabbar:rgba(236,238,240,.8);--glow1:rgba(255,255,255,.6);--glow2:rgba(0,0,0,.04);
-  --feld:rgba(0,0,0,.06);--sel:rgba(0,0,0,.08);--btnTxt:#fff;
+  --feld:rgba(0,0,0,.06);--sel:rgba(0,0,0,.08);--btnTxt:#fff;--mb:#e07300;--mbSoft:rgba(239,125,0,.14);--vorort:#d27a2a;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%;background:var(--bg1)}
@@ -38,7 +38,7 @@ body::before{width:60vw;height:60vw;left:-18vw;top:6vh;background:var(--glow1)}
 body::after{width:55vw;height:55vw;right:-16vw;bottom:14vh;background:var(--glow2)}
 main{max-width:640px;margin:0 auto;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;flex-direction:column;gap:14px}
 .kopf{padding-top:6px}
-.logo{width:40px;height:40px;border-radius:50%;margin:0 auto 6px;background:var(--karte);border:1px solid var(--rand);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.logo{width:40px;height:40px;border-radius:50%;margin:0 auto 6px;background:var(--karte);border:1px solid var(--mb);color:var(--mb);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.2)}
 .logo svg{width:22px;height:22px}
 h1{font-size:30px;margin:0;font-weight:700}
 .sub{color:var(--txt2);font-size:13px;margin-top:2px}
@@ -52,11 +52,12 @@ h1{font-size:30px;margin:0;font-weight:700}
 .btn.tint{background:linear-gradient(135deg,var(--c1),var(--c2));color:var(--c3,var(--btnTxt))}
 .btn.grau{background:var(--feld);color:var(--txt);box-shadow:none}
 .btn.klein{padding:6px 10px;font-size:13px;width:auto;border-radius:10px}
+.ico{vertical-align:-4px;margin-right:4px}.btn .ico{margin-right:6px}.btn.klein .ico{margin:0;vertical-align:-3px}
 .btn.rand{background:var(--feld);color:var(--txt);box-shadow:none;font-weight:400}
 .row{display:flex;gap:10px;align-items:center}.row>*{flex:1}
 .seg{display:flex;background:var(--feld);border-radius:10px;padding:2px}
 .seg button{flex:1;border:0;background:transparent;color:var(--txt);padding:8px;border-radius:8px;font:15px Arial;cursor:pointer}
-.seg button.on{background:rgba(255,255,255,.18);font-weight:700}
+.seg button.on{background:rgba(255,255,255,.18);font-weight:700;box-shadow:inset 0 -2px 0 var(--mb)}
 html[data-theme="hell"] .seg button.on{background:#fff}
 input,select,textarea{font:16px Arial;color:var(--txt);background:var(--feld);border:1px solid var(--rand2);border-radius:10px;padding:9px 10px;color-scheme:dark}
 html[data-theme="hell"] input,html[data-theme="hell"] select{color-scheme:light}
@@ -64,7 +65,7 @@ input[type=datetime-local],input[type=date],input[type=time]{width:100%}
 .feld{display:flex;align-items:center;gap:8px;text-align:left}.feld label{flex:0 0 68px;font-size:13px;color:var(--txt2)}.feld input,.feld select{flex:1;min-width:0}
 .chip{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid transparent}
 .chip.technisch{color:var(--txt);background:rgba(255,255,255,.16);border-color:var(--rand)}
-.chip.vorort{color:var(--txt);background:rgba(128,128,128,.22);border-color:var(--rand)}
+.chip.vorort{color:var(--mb);background:var(--mbSoft);border-color:rgba(239,125,0,.4)}
 .chip.rot{color:#ff6b66;background:rgba(255,107,102,.16)}
 .ergebnis{border-radius:22px;padding:18px;border:1px solid;display:flex;flex-direction:column;gap:10px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 .ergebnis.gruen{background:rgba(52,199,89,.10);border-color:rgba(52,199,89,.35);box-shadow:0 8px 24px rgba(0,0,0,.18)}
@@ -80,24 +81,24 @@ details summary::after{content:" ▸";color:var(--txt2)}details[open] summary::a
 .zeile{display:flex;justify-content:space-between;gap:10px;text-align:left;font-size:12px}.zeile span:first-child{color:var(--txt2)}.zeile span:last-child{font-weight:700;text-align:right}
 hr{border:0;border-top:1px solid var(--rand2);margin:2px 0;width:100%}
 .eintrag{text-align:left;display:flex;flex-direction:column;gap:3px}
-.eintrag .kopfz{display:flex;justify-content:space-between;align-items:baseline}
+.eintrag .kopfz{display:flex;justify-content:space-between;align-items:center;gap:6px}.eintrag .kopfz>.mono{white-space:nowrap;font-size:15px}
 .eintrag .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11.5px;color:var(--txt2)}
 .ausgeblendet{display:flex;gap:8px;align-items:center;text-align:left;color:var(--txt2);padding:8px;border-radius:10px;border:1px dashed var(--rand);background:rgba(128,128,128,.08);cursor:pointer}
 .ausgeblendet .t{text-decoration:line-through;font-size:13px}
 .ausgeblendet .u{font-size:11.5px}
-.mahnung{border-color:rgba(255,180,64,.45)}
+.mahnung{border-color:rgba(239,125,0,.5)}
 .tag{display:flex;gap:8px;align-items:center;font-size:13px;text-align:left}.tag .m{color:var(--txt2)}
 .kachel{flex:1;padding:8px 4px;border-radius:12px;display:flex;flex-direction:column;gap:2px}
 .kachel .n{font-size:24px;font-weight:700}.kachel .l{font-size:11.5px;color:var(--txt2)}
 .kachel.g{background:var(--feld);color:var(--txt)}.kachel.t{background:var(--feld);color:var(--technisch)}
-.kachel.v{background:var(--feld);color:var(--vorort)}.kachel.p{background:var(--feld);color:var(--pauschale)}
+.kachel.v{background:var(--mbSoft);color:var(--mb)}.kachel.p{background:var(--feld);color:var(--pauschale)}
 .kachel.gross .n{font-size:34px}.kachel .e{font-size:13px;font-weight:700;color:var(--txt)}
 .auswahl{display:flex;gap:8px;align-items:center;text-align:left;padding:7px 10px;border-radius:10px;background:rgba(128,128,128,.08);font-size:11.5px;color:var(--txt2)}
-.auswahl.on{background:var(--sel);font-size:13px;font-weight:700;color:var(--txt)}
+.auswahl.on{background:var(--mbSoft);font-size:13px;font-weight:700;color:var(--txt)}
 .grafik{position:relative;width:100%}
 canvas{width:100%!important}
 table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:4px 6px;text-align:right}td:first-child,th:first-child{text-align:left}
-th{font-weight:400;font-size:11.5px;color:var(--txt2)}tr.hv{background:var(--sel);border-radius:6px}tr.sum td{font-weight:700;border-top:1px solid var(--rand2)}
+th{font-weight:400;font-size:11.5px;color:var(--txt2)}tr.hv{background:var(--mbSoft);border-radius:6px}tr.sum td{font-weight:700;border-top:1px solid var(--rand2)}
 td .d{display:block;font-size:11px;color:var(--txt2)}td.nw{white-space:nowrap}
 .legende{display:flex;flex-direction:column;gap:8px}.legende div{display:flex;align-items:center;gap:8px;font-size:13px}.legende .sw{width:12px;height:12px;border-radius:4px}.legende .sp{flex:1;text-align:left}
 .balken{display:flex;height:12px;border-radius:6px;overflow:hidden;width:100%}
@@ -105,7 +106,7 @@ td .d{display:block;font-size:11px;color:var(--txt2)}td.nw{white-space:nowrap}
 .tabs{position:fixed;left:0;right:0;bottom:0;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:var(--tabbar);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--rand2);display:flex;justify-content:space-around;z-index:20}
 .tabs button{background:none;border:0;color:var(--txt2);font:11px Arial;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;border-radius:12px;cursor:pointer;min-width:58px}
 .tabs button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.tabs button.on{color:var(--txt);background:rgba(255,255,255,.12)}
+.tabs button.on{color:var(--mb);background:var(--mbSoft)}
 .zahnrad{position:fixed;right:16px;top:calc(8px + env(safe-area-inset-top));z-index:15;width:44px;height:44px;border-radius:50%;border:1px solid var(--rand);background:var(--karte);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:var(--txt);font-size:20px;cursor:pointer}
 .sheet{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center}
 .sheet.on{display:flex}
@@ -126,7 +127,7 @@ td .d{display:block;font-size:11px;color:var(--txt2)}td.nw{white-space:nowrap}
 </style>
 </head>
 <body>
-<button class="zahnrad" id="zahnrad" aria-label="Einstellungen">⚙︎</button>
+<button class="zahnrad" id="zahnrad" aria-label="Einstellungen"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></button>
 <main id="view"></main>
 <nav class="tabs" id="tabs"></nav>
 <div class="sheet" id="sheet"><div class="inner" id="sheetInner"></div></div>
@@ -330,6 +331,14 @@ const UI = { tab: localStorage.getItem('zeiterfassung.tab') || 'rechner', form: 
 const charts = {};
 function chart(id, cfg) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } const c = document.getElementById(id); if (!c) return null; return charts[id] = new Chart(c, cfg); }
 const $ = id => document.getElementById(id);
+const ICO = {
+  phone: '<path d="M5 4h3l2 5-2.5 1.5a11 11 0 006 6L15 14l5 2v3a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/>',
+  cross: '<path d="M10 4h4v6h6v4h-6v6h-4v-6H4v-4h6z"/>', stop: '<rect x="6" y="6" width="12" height="12" rx="2"/>', mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  swap: '<path d="M7 7h11m0 0l-3-3m3 3l-3 3M17 17H6m0 0l3 3m-3-3l3-3"/>', up: '<path d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16"/>', down: '<path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>', eye: '<path d="M3 3l18 18M10.6 10.6A2 2 0 0013.4 13.4M9.9 5.1A10 10 0 0121 12a10.5 10.5 0 01-2.3 3.3M6.6 6.6A10.6 10.6 0 003 12a10 10 0 0014.1 4.1"/>',
+  x: '<path d="M6 6l12 12M18 6L6 18"/>', undo: '<path d="M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3"/>', cam: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3"/>', warn: '<path d="M12 3l10 18H2zM12 10v4m0 3h.01"/>',
+};
+const ico = (n, size = 18) => `<svg class="ico" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICO[n]}</svg>`;
 const logoSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="12" r="8"/><path d="M11 7v5l3 2"/><path d="M16 18l2 2 4-4" stroke-width="2.4"/></svg>`;
 const kopf = (t, u) => `<div class="kopf"><div class="logo">${logoSvg}</div><h1>${t}</h1><div class="sub">${u}</div></div>`;
 const karte = (inner, titel) => `<div class="karte">${titel ? `<h2>${titel}</h2>` : ''}${inner}</div>`;
@@ -345,8 +354,8 @@ function backupMahnung() {
   const faellig = (m.geaendert || 0) > 0 && (tage === null || tage >= 7 || m.geaendert >= 5);
   if (!faellig) return '';
   const txt = tage === null ? 'Noch nie gesichert' : `Letztes Backup vor ${tage} Tag${tage === 1 ? '' : 'en'}`;
-  return `<div class="karte mahnung"><div class="b">⚠ Daten sichern</div><div class="mini">${txt} · ${m.geaendert} Änderung${m.geaendert === 1 ? '' : 'en'} seit dem letzten Backup. Die Daten liegen nur in diesem Browser – bitte das Backup per Mail an dich selbst schicken.</div>
-    <button class="btn" onclick="backupExport()">✉ Backup jetzt per Mail sichern</button><button class="btn rand klein" onclick="DB.meta.geaendert=0;save(true);render()">Später erinnern</button></div>`;
+  return `<div class="karte mahnung"><div class="b">${ico('warn')}Daten sichern</div><div class="mini">${txt} · ${m.geaendert} Änderung${m.geaendert === 1 ? '' : 'en'} seit dem letzten Backup. Die Daten liegen nur in diesem Browser – bitte das Backup per Mail an dich selbst schicken.</div>
+    <button class="btn" onclick="backupExport()">${ico('mail')}Backup jetzt per Mail sichern</button><button class="btn rand klein" onclick="DB.meta.geaendert=0;save(true);render()">Später erinnern</button></div>`;
 }
 function render() {
   document.documentElement.dataset.theme = S().darstellung === 'system' ? (matchMedia('(prefers-color-scheme: light)').matches ? 'hell' : 'dunkel') : S().darstellung;
@@ -373,12 +382,12 @@ function viewRechner() {
     h += `<div class="ergebnis laeuft"><div><span class="dot rot"></span><span class="b sec small">Einsatz läuft</span></div>
       <div class="hero mono" id="laufDauer" style="font-size:48px">${Fmt.dauer(dauerMin(l))}</div>
       <div class="row" style="justify-content:center">${typChip(l.typ)}<span class="small sec">seit ${Fmt.kurz(B(l))}</span></div>
-      <div class="row"><button class="btn grau" onclick="typWechsel('${l.id}')">${l.typ === 'vorort' ? '→ technisch' : '→ vor Ort'}</button>
-      <button class="btn" onclick="beenden('${l.id}')">■ Beenden</button></div></div>`;
+      <div class="row"><button class="btn grau" onclick="typWechsel('${l.id}')">${ico('swap')}${l.typ === 'vorort' ? 'technisch' : 'vor Ort'}</button>
+      <button class="btn" onclick="beenden('${l.id}')">${ico('stop')}Beenden</button></div></div>`;
   } else {
     h += karte(`<div class="b">Das Telefon klingelt?</div><div class="mini">Einmal tippen – der Einsatz läuft mit. Beenden, sobald du fertig bist; auch Stunden später.</div>
-      <div class="row"><button class="btn" onclick="starten('technisch')">☎ Start technisch</button>
-      <button class="btn grau" onclick="starten('vorort')">✚ Start vor Ort</button></div>`);
+      <div class="row"><button class="btn" onclick="starten('technisch')">${ico('phone')}Start technisch</button>
+      <button class="btn grau" style="color:var(--mb);border-color:rgba(239,125,0,.4)" onclick="starten('vorort')">${ico('cross')}Start vor Ort</button></div>`);
   }
   const f = UI.form;
   h += karte(`<div class="seg"><button class="${f.typ === 'technisch' ? 'on' : ''}" onclick="UI.form.typ='technisch';render()">Technisch (daheim)</button><button class="${f.typ === 'vorort' ? 'on' : ''}" onclick="UI.form.typ='vorort';render()">Vor Ort</button></div>
@@ -439,7 +448,7 @@ setInterval(() => { const el = $('laufDauer'); const l = aktive().find(e => e.la
 function viewProtokoll() {
   const s = S(); let h = kopf('Protokoll', 'Einsätze und Bereitschaftstage nach Monat') + backupMahnung();
   const f = RB.fensterAnTag(new Date(UI.neuerTag + 'T12:00'), s), dub = RB.istDublette(f.beginn);
-  h += karte(`<details><summary>＋ Rufbereitschaftstag hinzufügen</summary><div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
+  h += karte(`<details><summary>${ico('plus',16)}Rufbereitschaftstag hinzufügen</summary><div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
     <div class="feld"><label>Datum</label><input type="date" value="${UI.neuerTag}" onchange="UI.neuerTag=this.value;render()"></div>
     <button class="btn" ${dub ? 'disabled' : ''} onclick="tagHinzu()">${Fmt.zeit(f.beginn)} → ${Fmt.zeit(f.ende)} am Folgetag eintragen</button>
     ${dub ? '<div class="warn">Dieser Tag ist bereits erfasst.</div>' : ''}
@@ -454,19 +463,19 @@ function viewProtokoll() {
     const v = Verdienst.monat(new Date(k), s), dauer = Rest.merged(akt.map(e => [B(e), EW(e)])), aus = es.length - akt.length;
     let inner = `<div><div class="b">${Fmt.monat(new Date(k))}</div><div class="mini">${akt.length} Einsätze · ${Fmt.dauer(dauer)} · ${ts.length} Bereitschaftstage${aus ? ` · ${aus} ausgeblendet` : ''}</div><div class="mini tert">brutto ≈ ${Fmt.euro(v.gesamt)}</div></div>`;
     inner += es.map((e, i) => einsatzZeile(e, akt, s) + (i < es.length - 1 ? '<hr>' : '')).join('');
-    if (ts.length) inner += '<hr>' + ts.map(t => { const p = Verdienst.pauschale(t, s); return `<div class="tag"><span class="m">☾</span><span class="mono">${Fmt.kurz(new Date(t.beginn))}–${Fmt.zeit(new Date(t.ende))}</span><span class="mini">${p.detail.split(' · ')[0]}</span><span style="flex:1"></span><span class="mini tert mono">${Fmt.euro(Verdienst.summe(p.b))}</span><button class="btn rand klein" onclick="tagLoeschen('${t.id}')">✕</button></div>`; }).join('');
+    if (ts.length) inner += '<hr>' + ts.map(t => { const p = Verdienst.pauschale(t, s); return `<div class="tag"><span class="m">☾</span><span class="mono">${Fmt.kurz(new Date(t.beginn))}–${Fmt.zeit(new Date(t.ende))}</span><span class="mini">${p.detail.split(' · ')[0]}</span><span style="flex:1"></span><span class="mini tert mono">${Fmt.euro(Verdienst.summe(p.b))}</span><button class="btn rand klein" onclick="tagLoeschen('${t.id}')">${ico('x',15)}</button></div>`; }).join('');
     h += karte(inner);
   }
-  if (DB.einsaetze.length) h += karte(`<button class="btn" ${s.mail ? '' : 'disabled'} onclick="Mail.oeffne(S().mail,'', 'Rufbereitschaft-Einsatzprotokoll', Mail.protokoll(S()))">✉ Liste per Mail an mich</button>
+  if (DB.einsaetze.length) h += karte(`<button class="btn" ${s.mail ? '' : 'disabled'} onclick="Mail.oeffne(S().mail,'', 'Rufbereitschaft-Einsatzprotokoll', Mail.protokoll(S()))">${ico('mail')}Liste per Mail an mich</button>
     <div class="row"><button class="btn rand" onclick="kopieren()">${UI.kopiert ? 'Kopiert ✓' : 'Kopieren'}</button><button class="btn rand" style="color:#ff6b66" onclick="allesLoeschen()">Leeren</button></div>
     <div class="mini">Der Ausgleichs-/Verschiebungshinweis der aktuellen Nacht wird vorsorglich immer mit protokolliert. Ausgeblendete Einträge sind nicht enthalten.</div>`, 'Export');
   return h;
 }
 function einsatzZeile(e, akt, s) {
-  if (e.aktiv === false) return `<div class="ausgeblendet" onclick="aktivieren('${e.id}')"><span>⊘</span><div style="flex:1"><div class="t mono">${Fmt.kurz(B(e))}–${Fmt.zeit(E(e))} · ${TYP[e.typ]}</div><div class="u">Nicht verwendet${e.hinweis ? ' – ' + esc(e.hinweis) : ''} · tippen zum Verwenden</div></div><span style="font-size:20px">↺</span><button class="btn rand klein" onclick="event.stopPropagation();loeschen('${e.id}')">✕</button></div>`;
+  if (e.aktiv === false) return `<div class="ausgeblendet" onclick="aktivieren('${e.id}')"><span>${ico('eye',16)}</span><div style="flex:1"><div class="t mono">${Fmt.kurz(B(e))}–${Fmt.zeit(E(e))} · ${TYP[e.typ]}</div><div class="u">Nicht verwendet${e.hinweis ? ' – ' + esc(e.hinweis) : ''} · tippen zum Verwenden</div></div><span style="color:var(--mb)">${ico('undo',20)}</span><button class="btn rand klein" onclick="event.stopPropagation();loeschen('${e.id}')">${ico('x',15)}</button></div>`;
   const p = Verdienst.inanspruchnahme(e, s), bew = Verdienst.bewertet(e), koll = RB.kollision(B(e), EW(e), e.id);
-  return `<div class="eintrag"><div class="kopfz"><span class="mono">${Fmt.kurz(B(e))}–${e.laeuft ? 'läuft' : Fmt.zeit(E(e))}</span><span class="row" style="flex:0;gap:6px"><span class="mini tert mono">${Fmt.euro(Verdienst.summe(p.b))}</span><button class="btn rand klein" title="Ausblenden" onclick="ausblenden('${e.id}')">⊘</button><button class="btn rand klein" onclick="loeschen('${e.id}')">✕</button></span></div>
-    <div class="meta">${typChip(e.typ)}<span>${Fmt.dauer(dauerMin(e))}</span>${e.laeuft ? chip('läuft', 'rot') : ''}${koll ? chip('Überschneidung', 'rot') : ''}${e.typ === 'vorort' && bew !== dauerMin(e) ? `<span class="tert">→ ${Fmt.dauer(bew)} gezählt</span>` : ''}${e.quelle === 'foto' ? '<span>📷</span>' : ''}
+  return `<div class="eintrag"><div class="kopfz"><span class="mono">${Fmt.kurz(B(e))}–${e.laeuft ? 'läuft' : Fmt.zeit(E(e))}</span><span class="row" style="flex:0;gap:6px"><span class="mini tert mono">${Fmt.euro(Verdienst.summe(p.b))}</span><button class="btn rand klein" title="Ausblenden" onclick="ausblenden('${e.id}')">${ico('eye',15)}</button><button class="btn rand klein" onclick="loeschen('${e.id}')">${ico('x',15)}</button></span></div>
+    <div class="meta">${typChip(e.typ)}<span>${Fmt.dauer(dauerMin(e))}</span>${e.laeuft ? chip('läuft', 'rot') : ''}${koll ? chip('Überschneidung', 'rot') : ''}${e.typ === 'vorort' && bew !== dauerMin(e) ? `<span class="tert">→ ${Fmt.dauer(bew)} gezählt</span>` : ''}${e.quelle === 'foto' ? ico('cam',14) : ''}
     </div>
     <div class="mini tert">${Verdienst.zerlegung(p.b)}</div></div>`;
 }
@@ -529,7 +538,7 @@ function statistik(von, bis) {
   s.oeT = s.technisch ? s.tMin / s.technisch : 0; s.oeV = s.vorOrt ? s.vMin / s.vorOrt : 0; s.jeNacht = s.tage ? (s.technisch + s.vorOrt) / s.tage : 0; s.ruhig = Math.max(0, s.tage - s.mitAnruf); s.gesamt = s.tMin + s.vMin;
   return s;
 }
-const auswahlZeile = (id, text, hinweis = 'Balken antippen für Details') => `<div class="auswahl ${text ? 'on' : ''}" id="${id}">${text ? '▤ ' + text : '☝ ' + hinweis}</div>`;
+const auswahlZeile = (id, text, hinweis = 'Balken antippen für Details') => `<div class="auswahl ${text ? 'on' : ''}" id="${id}">${text ? text : hinweis}</div>`;
 function naechte() { const { mv, mb } = statBasis(); return DB.tage.filter(t => new Date(t.beginn) >= mv && new Date(t.beginn) < mb).sort((a, b) => a.beginn < b.beginn ? -1 : 1).map(t => {
   const n = { nacht: sod(new Date(t.beginn)), technisch: 0, vorOrt: 0, tMin: 0, vMin: 0 };
   for (const e of aktive()) if (B(e) >= new Date(t.beginn) && B(e) < new Date(t.ende)) { if (e.typ === 'technisch') { n.technisch++; n.tMin += dauerMin(e); } else { n.vorOrt++; n.vMin += dauerMin(e); } }
@@ -608,7 +617,7 @@ function typChart(id, labels, t, v, selKey, textFn, elId, extra) {
   const c = chart(id, { type: 'bar', data: { labels, datasets: [{ label: 'Technisch', data: t, backgroundColor: dim(C.technisch, sel, n) }, { label: 'Vor Ort', data: v, backgroundColor: dim(C.vorort, sel, n) }] },
     options: barOpts(Object.assign({ stacked: true, tip: false, onClick: (ev, els, ch) => { const pts = ch.getElementsAtEventForMode(ev, 'index', { intersect: false }, true); if (!pts.length) return; const i = pts[0].index;
       UI.sel[selKey] = UI.sel[selKey] === i ? null : i; const s2 = UI.sel[selKey]; ch.data.datasets[0].backgroundColor = dim(C.technisch, s2, n); ch.data.datasets[1].backgroundColor = dim(C.vorort, s2, n); ch.update();
-      const el = $(elId); const txt = textFn(s2); if (el) { el.className = 'auswahl' + (txt ? ' on' : ''); el.textContent = txt ? '▤ ' + txt : '☝ Balken antippen für Details'; } if (extra) extra(s2); } }, extra ? {} : {})) });
+      const el = $(elId); const txt = textFn(s2); if (el) { el.className = 'auswahl' + (txt ? ' on' : ''); el.textContent = txt ? txt : 'Balken antippen für Details'; } if (extra) extra(s2); } }, extra ? {} : {})) });
   return c;
 }
 function chartsStatistik() {
@@ -684,7 +693,7 @@ const Parser = {
 const ART = { rufbereitschaft: 'Rufbereitschaft', vorort: 'Einsatz vor Ort', technisch: 'Einsatz technisch' };
 function viewImport() {
   const im = UI.imp; let h = kopf('Foto-Import', 'Dienstplan aus dem Dokumentationstool');
-  h += karte(`<div class="row"><label class="btn" style="display:block">📷 Foto aufnehmen<input type="file" accept="image/*" capture="environment" hidden onchange="bildGewaehlt(this)"></label><label class="btn rand" style="display:block">Aus Mediathek<input type="file" accept="image/*" hidden onchange="bildGewaehlt(this)"></label></div>
+  h += karte(`<div class="row"><label class="btn" style="display:block">${ico('cam')}Foto aufnehmen<input type="file" accept="image/*" capture="environment" hidden onchange="bildGewaehlt(this)"></label><label class="btn rand" style="display:block">Aus Mediathek<input type="file" accept="image/*" hidden onchange="bildGewaehlt(this)"></label></div>
     <div class="mini">Erkannt werden Zeilen wie "16:30-08:00+1 Rufbereitschaft", "*AE in RB ohne FZA" (vor Ort) und "techn. AE in RB" (technisch). Am besten ein zugeschnittener PC-Screenshot. Die Texterkennung lädt beim ersten Mal ein Sprachpaket (Internet nötig), danach läuft sie im Browser.</div>`, 'Dienstplan-Foto');
   if (im.bild) h += karte(`<img class="vorschau" src="${im.bild}"><div class="row"><select onchange="UI.imp.monat=+this.value">${MON.map((n, i) => `<option value="${i + 1}" ${im.monat === i + 1 ? 'selected' : ''}>${n}</option>`).join('')}</select><select onchange="UI.imp.jahr=+this.value">${[im.jahr - 2, im.jahr - 1, im.jahr, im.jahr + 1].map(j => `<option ${j === im.jahr ? 'selected' : ''}>${j}</option>`).join('')}</select></div>
     ${im.quelle ? `<div class="mini ${im.quelle === 'fallback' ? 'warn' : ''}">Monat ${{ kopfzeile: 'aus der Kopfzeile', wochentage: 'aus den Wochentagen abgeleitet', fallback: 'nicht erkannt – bitte prüfen' }[im.quelle]}</div>` : ''}
@@ -692,7 +701,7 @@ function viewImport() {
   if (im.fehler) h += karte(`<div class="warn">${esc(im.fehler)}</div>`); if (im.erfolg) h += karte(`<div class="ok">${esc(im.erfolg)}</div>`);
   if (im.eintraege.length) {
     const neu = im.eintraege.filter(e => !istDuplikat(e)).length, fehlend = nichtImScan();
-    h += karte(`<div class="row small b"><span style="color:var(--grund)">⊕ ${neu} neu</span><span class="sec">✓ ${im.eintraege.length - neu} bereits erfasst</span></div>
+    h += karte(`<div class="row small b"><span>${ico('plus',14)}${neu} neu</span><span class="sec">${im.eintraege.length - neu} bereits erfasst</span></div>
       ${fehlend.length ? `<div class="left"><div class="small b" style="color:var(--ueberstd)">⚠ ${fehlend.length} in der App, aber nicht im Scan</div>${fehlend.map(x => `<div class="mini">${x}</div>`).join('')}<div class="mini tert">Zur Kontrolle: Diese App-Einträge liegen im gescannten Zeitraum, wurden im System aber nicht gefunden.</div></div>` : ''}`, 'Abgleich mit der App');
     h += karte(im.eintraege.map(e => `<div class="imp-eintrag"><div class="k"><input type="checkbox" ${e.uebernehmen ? 'checked' : ''} onchange="impToggle('${e.id}',this.checked)"><div style="flex:1"><div class="small b">${ART[e.art]} ${istDuplikat(e) ? '<span class="mini sec">bereits vorhanden</span>' : ''}</div><div class="mini mono">${Fmt.kurz(e.beginn)} – ${Fmt.kurz(e.ende)}</div><div class="mini tert" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(e.quelltext)}</div></div></div>
       <details><summary class="mini">Korrigieren</summary><div style="display:flex;flex-direction:column;gap:6px;margin-top:6px"><select onchange="impSet('${e.id}','art',this.value)">${Object.entries(ART).map(([k, v]) => `<option value="${k}" ${e.art === k ? 'selected' : ''}>${v}</option>`).join('')}</select>
@@ -758,9 +767,9 @@ function renderSheet() {
     <div class="sec-t">Ruhezeit</div><div class="seg"><button class="${s.refRuheStunden === 10 ? 'on' : ''}" onclick="set('refRuheStunden',10)">10 Stunden</button><button class="${s.refRuheStunden === 11 ? 'on' : ''}" onclick="set('refRuheStunden',11)">11 Stunden</button></div>
     ${r('Regulärer Dienstbeginn', `<input type="time" value="${s.dienstbeginn}" onchange="set('dienstbeginn',this.value)">`)}${r('Regelarbeitszeit-Ende (Mo–Fr)', `<input type="time" value="${s.dienstende}" onchange="set('dienstende',this.value)">`)}
     <div class="sec-t">Meldungen</div>${r('Mein Name', tx('name', 'Name'))}${r('Meine E-Mail', tx('mail', 'für Protokoll an mich', 'email'))}${r('Verteiler', tx('empfaenger', 'Mailadressen, mit Komma', 'email'))}
-    <div class="sec-t">Backup</div><div class="hint">${DB.meta && DB.meta.letztesBackup ? "Letztes Backup: " + Fmt.kurz(new Date(DB.meta.letztesBackup)) : "Noch kein Backup erstellt"}</div><button class="btn rand" onclick="backupExport()">⇪ Backup erstellen &amp; teilen (${DB.einsaetze.length} Einsätze, ${DB.tage.length} Tage)</button>
-    <label class="btn rand" style="display:block;text-align:center">⇩ Backup wiederherstellen (Datei wählen)<input type="file" accept=".json,application/json" hidden onchange="backupImport(this)"></label>
-    <div class="hint">JSON-Datei mit allen Einsätzen, Bereitschaftstagen und Einstellungen. Beim Wiederherstellen bleiben vorhandene Einträge erhalten; Dubletten werden übersprungen, Überschneidungen zusammengeführt. Da die Daten nur im Browser dieses Telefons liegen, regelmäßig ein Backup per Mail an dich selbst schicken.</div>
+    <div class="sec-t">Backup</div><div class="hint">${DB.meta && DB.meta.letztesBackup ? "Letztes Backup: " + Fmt.kurz(new Date(DB.meta.letztesBackup)) : "Noch kein Backup erstellt"}</div><button class="btn rand" onclick="backupExport()">${ico('up')}Backup erstellen &amp; teilen (${DB.einsaetze.length} Einsätze, ${DB.tage.length} Tage)</button>
+    <label class="btn rand" style="display:block;text-align:center">${ico('down')}Backup wiederherstellen (Datei wählen)<input type="file" accept=".json,application/json" hidden onchange="backupImport(this)"></label>
+    <div class="hint"><b>Aus einer Backup-Mail zurückholen:</b> In der Mail den Anhang „Zeiterfassung-Backup-….json" antippen → Teilen-Symbol → „In Dateien sichern". Dann hier „Backup wiederherstellen" → Dateien → die gesicherte Datei wählen. Vorhandene Einträge bleiben erhalten; Dubletten werden übersprungen, Überschneidungen zusammengeführt. Auf einem neuen oder leeren Telefon ist damit alles wieder da – inklusive Einstellungen, wenn du das bestätigst.</div>
     <div class="hint">Alle Daten bleiben lokal auf diesem Gerät. Entgelttabellen TdL 40 h (Marburger Bund, Tarifrunde 2026) – je Dienstdatum automatisch die gültige Tabelle.</div>
     <button class="btn" onclick="sheet(false)">Fertig</button>`;
 }
@@ -774,10 +783,11 @@ async function backupExport() {
 function backupImport(inp) {
   const f = inp.files && inp.files[0]; if (!f) return; const r = new FileReader();
   r.onload = () => { try { const d = JSON.parse(r.result); let n = 0, t = 0, ue = 0;
+    if ((DB.einsaetze.length || DB.tage.length) && confirm('Vorhandene Einträge vor dem Wiederherstellen löschen (vollständig durch das Backup ersetzen)?\n\nAbbrechen = zusammenführen (Dubletten werden übersprungen).')) { DB.einsaetze = []; DB.tage = []; }
     for (const x of d.tage || []) { if (RB.istDublette(new Date(x.beginn))) { ue++; continue; } DB.tage.push({ id: uid(), beginn: x.beginn, ende: x.ende, quelle: x.quelle || 'manuell' }); t++; }
     for (const x of d.einsaetze || []) { const b = new Date(x.beginn), e = new Date(x.ende); if (DB.einsaetze.some(y => Math.abs(B(y) - b) < 60000 && Math.abs(E(y) - e) < 60000)) { ue++; continue; } const rr = RB.einfuegen(b, e, x.typ === 'vorort' ? 'vorort' : 'technisch', x.quelle || 'manuell'); if (rr.art === 'neu') n++; else ue++; }
     if (d.einstellungen && confirm('Auch die Einstellungen aus dem Backup übernehmen?')) DB.s = Object.assign(defaultSettings(), d.einstellungen);
-    save(); sheetMeldung = `Wiederhergestellt: ${n} Einsätze, ${t} Tage${ue ? `, ${ue} Dubletten übersprungen` : ''}`; renderSheet(); } catch (e) { alert('Wiederherstellen fehlgeschlagen: ' + e); } };
+    DB.meta.letztesBackup = new Date().toISOString(); DB.meta.geaendert = 0; save(true); sheetMeldung = `Wiederhergestellt: ${n} Einsätze, ${t} Tage${ue ? `, ${ue} Dubletten übersprungen` : ''}`; renderSheet(); } catch (e) { alert('Wiederherstellen fehlgeschlagen: ' + e); } };
   r.readAsText(f);
 }
 
