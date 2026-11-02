@@ -56,7 +56,7 @@ h1{font-size:30px;margin:0;font-weight:700}
 .ico{vertical-align:-4px;margin-right:4px}.btn .ico{margin-right:6px}.btn.klein .ico{margin:0;vertical-align:-3px}
 .btn.rand{background:var(--feld);color:var(--txt);box-shadow:none;font-weight:400}
 .btn.anruf{min-height:64px;font-size:18px;display:flex;align-items:center;justify-content:center;gap:4px}
-.btn.anruf .zz{font:700 13px Arial;opacity:.75;margin-left:8px}
+.btn.anruf{flex-direction:column;gap:2px}.btn.anruf .zl{display:flex;align-items:center}.btn.anruf .zz{font:400 12.5px Arial;opacity:.75}
 .anrufOk{text-align:center;font-size:13px;color:var(--txt2)}
 .row{display:flex;gap:10px;align-items:center}.row>*{flex:1}
 .seg{display:flex;background:var(--feld);border-radius:10px;padding:2px}
@@ -435,15 +435,15 @@ function viewRechner() {
       <details class="left"><summary class="mini" style="text-align:center">Beginn anpassen (vergessen zu drücken?)</summary>
         <div class="row" style="margin-top:8px"><button class="btn rand klein" onclick="beginnVerschieben('${l.id}',-5)">−5 min</button><button class="btn rand klein" onclick="beginnVerschieben('${l.id}',-10)">−10 min</button><button class="btn rand klein" onclick="beginnVerschieben('${l.id}',-30)">−30 min</button><button class="btn rand klein" onclick="beginnVerschieben('${l.id}',-60)">−1 h</button></div>
         <div class="feld" style="margin-top:8px"><label>Beginn</label><input type="datetime-local" value="${toInput(B(l))}" onchange="beginnSetzen('${l.id}',this.value)"></div></details>
-      <button class="btn anruf" onclick="anruf()">${ico('phone')}Weiterer Anruf +1<span class="zz">${anrufe(l)} ${anrufe(l) === 1 ? 'Anruf' : 'Anrufe'}</span></button>${UI.anrufOk ? `<div class="anrufOk">${esc(UI.anrufOk)}</div>` : ''}
+      <button class="btn anruf" onclick="anruf()"><span class="zl">${ico('phone')}Weiteren Anruf zählen +1</span><span class="zz">bisher ${anrufe(l)} ${anrufe(l) === 1 ? 'Anruf' : 'Anrufe'} · nur für die Statistik, Einsatz läuft weiter</span></button>${UI.anrufOk ? `<div class="anrufOk">${esc(UI.anrufOk)}</div>` : ''}
       <div class="row"><button class="btn grau" onclick="typWechsel('${l.id}')">${ico('swap')}${l.typ === 'vorort' ? 'technisch' : 'vor Ort'}</button>
       <button class="btn" onclick="beenden('${l.id}')">${ico('stop')}Beenden</button></div></div>`;
   } else {
     h += karte(`<div class="b">Das Telefon klingelt?</div><div class="mini">Einmal tippen – der Einsatz läuft mit. Beenden, sobald du fertig bist; auch Stunden später.</div>
       <div class="row"><button class="btn start" onclick="starten('technisch')">${ico('phone')}Start technisch</button>
       <button class="btn start" onclick="starten('vorort')"><span style="color:var(--mb)">${ico('cross')}</span>Start vor Ort</button></div>
-      <button class="btn anruf" onclick="anruf()">${ico('phone')}Anruf +1<span class="zz">3 min technisch</span></button>
-      ${UI.anrufOk ? `<div class="anrufOk">${esc(UI.anrufOk)}</div>` : '<div class="mini">Kurzer Anruf ohne Timer: wird als 3-Minuten-Einsatz (technisch) protokolliert.</div>'}`);
+      <button class="btn anruf" onclick="anruf()"><span class="zl">${ico('phone')}Anruf zählen +1</span><span class="zz">kein Einsatz läuft → 3 min technisch</span></button>
+      ${UI.anrufOk ? `<div class="anrufOk">${esc(UI.anrufOk)}</div>` : '<div class="mini">Zählt jeden Anruf für die Statistik. Ohne laufenden Einsatz wird er als 3-Minuten-Einsatz (technisch) protokolliert; während eines Einsatzes nur mitgezählt.</div>'}`);
   }
   const f = UI.form;
   h += karte(`<div class="seg"><button class="${f.typ === 'technisch' ? 'on' : ''}" onclick="UI.form.typ='technisch';render()">Technisch (daheim)</button><button class="${f.typ === 'vorort' ? 'on' : ''}" onclick="UI.form.typ='vorort';render()">Vor Ort</button></div>
