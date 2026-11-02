@@ -55,6 +55,9 @@ h1{font-size:30px;margin:0;font-weight:700}
 .btn.klein{padding:6px 10px;font-size:13px;width:auto;border-radius:10px}
 .ico{vertical-align:-4px;margin-right:4px}.btn .ico{margin-right:6px}.btn.klein .ico{margin:0;vertical-align:-3px}
 .btn.rand{background:var(--feld);color:var(--txt);box-shadow:none;font-weight:400}
+.btn.anruf{min-height:64px;font-size:18px;display:flex;align-items:center;justify-content:center;gap:4px}
+.btn.anruf .zz{font:700 13px Arial;opacity:.75;margin-left:8px}
+.anrufOk{text-align:center;font-size:13px;color:var(--txt2)}
 .row{display:flex;gap:10px;align-items:center}.row>*{flex:1}
 .seg{display:flex;background:var(--feld);border-radius:10px;padding:2px}
 .seg button{flex:1;border:0;background:transparent;color:var(--txt);padding:8px;border-radius:8px;font:15px Arial;cursor:pointer}
@@ -182,6 +185,9 @@ const B = e => new Date(e.beginn), E = e => new Date(e.ende);
 const EW = e => e.laeuft ? new Date(Math.max(Date.now(), B(e).getTime() + 3 * 60000)) : E(e);
 const dauerMin = e => Math.max(0, (EW(e) - B(e)) / 60000);
 const aktive = () => DB.einsaetze.filter(e => e.aktiv !== false);
+// Anrufe: jeder Einsatz = 1 Anruf (Beginn) + weitere in anrufZeiten
+const anrufe = e => 1 + (e.anrufZeiten || []).length;
+const anrufAbsorbieren = (k, l) => { k.anrufZeiten = [...(k.anrufZeiten || []), B(l).toISOString(), ...(l.anrufZeiten || [])].sort(); };
 const S = () => DB.s;
 
 // ============================================================ Feiertage (Gauß)
@@ -317,8 +323,8 @@ const Mail = {
   },
   protokoll(s) {
     const es = aktive().sort((a, b) => B(a) - B(b)), lines = ['Rufbereitschaft – Einsatzprotokoll', ''];
-    for (const e of es) { const f = Geo.fazit(e); lines.push(`${Fmt.kurz(B(e))}–${Fmt.zeit(EW(e))}  (${Fmt.dauer(dauerMin(e))})  ${TYP[e.typ]}${f && f.ok ? `  [Standort: ${f.name} ${Fmt.zeit(f.von)}–${Fmt.zeit(f.bis)}]` : ''}`); }
-    lines.push('', `Summe: ${es.length} Einsätze, ${Fmt.dauer(Rest.merged(es.map(e => [B(e), EW(e)])))}`);
+    for (const e of es) { const f = Geo.fazit(e); lines.push(`${Fmt.kurz(B(e))}–${Fmt.zeit(EW(e))}  (${Fmt.dauer(dauerMin(e))})  ${TYP[e.typ]}${anrufe(e) > 1 ? `  (${anrufe(e)} Anrufe)` : ''}${f && f.ok ? `  [Standort: ${f.name} ${Fmt.zeit(f.von)}–${Fmt.zeit(f.bis)}]` : ''}`); }
+    lines.push('', `Summe: ${es.length} Einsätze (${es.reduce((x, e) => x + anrufe(e), 0)} Anrufe), ${Fmt.dauer(Rest.merged(es.map(e => [B(e), EW(e)])))}`);
     if (DB.tage.length) lines.push(`Rufbereitschaftstage: ${DB.tage.length}`);
     const r = Rest.compute(es, s), refH = s.refRuheStunden;
     if (r && r.ampel === 'orange') lines.push('', 'Hinweis (vorsorglich vermerkt):', `Letzte zusammenhängende Ruhe ${Fmt.dauer(r.letzteRuheMin)} (unter ${refH} h) – Ausgleichsanspruch ${Fmt.dauer(r.ausgleichMin)} zu anderen Zeiten auszugleichen. Ohne Ausgleich wäre ein Dienstbeginn um ${r.hypEarliest ? Fmt.zeit(r.hypEarliest) : '–'} Uhr nötig gewesen.`);
@@ -429,12 +435,15 @@ function viewRechner() {
       <details class="left"><summary class="mini" style="text-align:center">Beginn anpassen (vergessen zu drücken?)</summary>
         <div class="row" style="margin-top:8px"><button class="btn rand klein" onclick="beginnVerschieben('${l.id}',-5)">−5 min</button><button class="btn rand klein" onclick="beginnVerschieben('${l.id}',-10)">−10 min</button><button class="btn rand klein" onclick="beginnVerschieben('${l.id}',-30)">−30 min</button><button class="btn rand klein" onclick="beginnVerschieben('${l.id}',-60)">−1 h</button></div>
         <div class="feld" style="margin-top:8px"><label>Beginn</label><input type="datetime-local" value="${toInput(B(l))}" onchange="beginnSetzen('${l.id}',this.value)"></div></details>
+      <button class="btn anruf" onclick="anruf()">${ico('phone')}Weiterer Anruf +1<span class="zz">${anrufe(l)} ${anrufe(l) === 1 ? 'Anruf' : 'Anrufe'}</span></button>${UI.anrufOk ? `<div class="anrufOk">${esc(UI.anrufOk)}</div>` : ''}
       <div class="row"><button class="btn grau" onclick="typWechsel('${l.id}')">${ico('swap')}${l.typ === 'vorort' ? 'technisch' : 'vor Ort'}</button>
       <button class="btn" onclick="beenden('${l.id}')">${ico('stop')}Beenden</button></div></div>`;
   } else {
     h += karte(`<div class="b">Das Telefon klingelt?</div><div class="mini">Einmal tippen – der Einsatz läuft mit. Beenden, sobald du fertig bist; auch Stunden später.</div>
       <div class="row"><button class="btn start" onclick="starten('technisch')">${ico('phone')}Start technisch</button>
-      <button class="btn start" onclick="starten('vorort')"><span style="color:var(--mb)">${ico('cross')}</span>Start vor Ort</button></div>`);
+      <button class="btn start" onclick="starten('vorort')"><span style="color:var(--mb)">${ico('cross')}</span>Start vor Ort</button></div>
+      <button class="btn anruf" onclick="anruf()">${ico('phone')}Anruf +1<span class="zz">3 min technisch</span></button>
+      ${UI.anrufOk ? `<div class="anrufOk">${esc(UI.anrufOk)}</div>` : '<div class="mini">Kurzer Anruf ohne Timer: wird als 3-Minuten-Einsatz (technisch) protokolliert.</div>'}`);
   }
   const f = UI.form;
   h += karte(`<div class="seg"><button class="${f.typ === 'technisch' ? 'on' : ''}" onclick="UI.form.typ='technisch';render()">Technisch (daheim)</button><button class="${f.typ === 'vorort' ? 'on' : ''}" onclick="UI.form.typ='vorort';render()">Vor Ort</button></div>
@@ -476,13 +485,21 @@ function beginnVerschieben(id, min) { const e = DB.einsaetze.find(x => x.id === 
 function beginnSetzen(id, v) { const e = DB.einsaetze.find(x => x.id === id), d = new Date(v); if (!e || isNaN(d) || d > new Date()) { render(); return; } e.beginn = d.toISOString(); save(); render(); }
 function starten(typ) { const j = new Date(); const e = { id: uid(), beginn: j.toISOString(), ende: addMin(j, 3).toISOString(), typ, quelle: 'manuell', aktiv: true, laeuft: true, hinweis: '' };
   DB.einsaetze.push(e); RB.ergaenzeTag(e, S()); save(); render(); Geo.vermerke(e, true); }
+function anruf() {
+  const j = new Date(), l = aktive().find(e => e.laeuft);
+  if (l) { (l.anrufZeiten = l.anrufZeiten || []).push(j.toISOString()); UI.anrufOk = `Anruf gezählt ✓ – ${anrufe(l)} in diesem Einsatz`; }
+  else { const erg = RB.einfuegen(j, addMin(j, 3), 'technisch', 'anruf');
+    if (erg.art === 'neu') { RB.ergaenzeTag(erg.neu, S()); UI.anrufOk = `Anruf ${Fmt.zeit(j)} Uhr erfasst ✓ (3 min technisch)`; }
+    else { anrufAbsorbieren(erg.k, erg.neu); UI.anrufOk = `Anruf gezählt ✓ – zu ${Fmt.zeit(B(erg.k))}–${Fmt.zeit(E(erg.k))} zusammengeführt (${anrufe(erg.k)} Anrufe)`; } }
+  save(); render(); clearTimeout(UI.anrufT); UI.anrufT = setTimeout(() => { UI.anrufOk = ''; if (UI.tab === 'rechner') render(); }, 5000);
+}
 function typWechsel(id) { const e = DB.einsaetze.find(x => x.id === id); if (!e) return; e.typ = e.typ === 'vorort' ? 'technisch' : 'vorort'; save(); render(); Geo.vermerke(e, true); }
 async function beenden(id) {
   const l = DB.einsaetze.find(x => x.id === id); if (!l) return;
   await Geo.vermerke(l, true);
   const ende = new Date(Math.max(Date.now(), B(l).getTime() + 3 * 60000)); l.ende = ende.toISOString(); l.laeuft = false;
   const k = RB.kollision(B(l), ende, l.id);
-  if (k) { const kb = new Date(Math.min(B(k), B(l))), ke = new Date(Math.max(EW(k), ende)); k.beginn = kb.toISOString(); k.ende = ke.toISOString(); if (l.typ === 'vorort') k.typ = 'vorort';
+  if (k) { const kb = new Date(Math.min(B(k), B(l))), ke = new Date(Math.max(EW(k), ende)); k.beginn = kb.toISOString(); k.ende = ke.toISOString(); if (l.typ === 'vorort') k.typ = 'vorort'; anrufAbsorbieren(k, l);
     l.aktiv = false; l.hinweis = `in ${Fmt.kurz(kb)}–${Fmt.zeit(ke)} aufgegangen`; UI.meldung = `Beendet und mit ${Fmt.zeit(kb)}–${Fmt.zeit(ke)} zusammengeführt.`; }
   else UI.meldung = `Einsatz beendet ✓ (${Fmt.dauer(dauerMin(l))})`;
   save(); render(); setTimeout(() => { UI.meldung = ''; if (UI.tab === 'rechner') render(); }, 4000);
@@ -528,7 +545,7 @@ function einsatzZeile(e, akt, s) {
   if (e.aktiv === false) return `<div class="ausgeblendet" onclick="aktivieren('${e.id}')"><span>${ico('eye',16)}</span><div style="flex:1"><div class="t mono">${Fmt.kurz(B(e))}–${Fmt.zeit(E(e))} · ${TYP[e.typ]}</div><div class="u">Nicht verwendet${e.hinweis ? ' – ' + esc(e.hinweis) : ''} · tippen zum Verwenden</div></div><span style="color:var(--mb)">${ico('undo',20)}</span><button class="btn rand klein" onclick="event.stopPropagation();loeschen('${e.id}')">${ico('x',15)}</button></div>`;
   const p = Verdienst.inanspruchnahme(e, s), bew = Verdienst.bewertet(e), koll = RB.kollision(B(e), EW(e), e.id);
   return `<div class="eintrag"><div class="kopfz"><span class="mono">${Fmt.kurz(B(e))}–${e.laeuft ? 'läuft' : Fmt.zeit(E(e))}</span><span class="row" style="flex:0;gap:6px"><span class="mini tert mono">${Fmt.euro(Verdienst.summe(p.b))}</span><button class="btn rand klein" title="Ausblenden" onclick="ausblenden('${e.id}')">${ico('eye',15)}</button><button class="btn rand klein" onclick="loeschen('${e.id}')">${ico('x',15)}</button></span></div>
-    <div class="meta">${typChip(e.typ)}<span>${Fmt.dauer(dauerMin(e))}</span>${e.laeuft ? chip('läuft', 'rot') : ''}${koll ? chip('Überschneidung', 'rot') : ''}${e.typ === 'vorort' && bew !== dauerMin(e) ? `<span class="tert">→ ${Fmt.dauer(bew)} gezählt</span>` : ''}${e.quelle === 'foto' ? ico('cam',14) : ''}
+    <div class="meta">${typChip(e.typ)}<span>${Fmt.dauer(dauerMin(e))}</span>${anrufe(e) > 1 ? `<span>${ico('phone',14)}${anrufe(e)} Anrufe</span>` : ''}${e.laeuft ? chip('läuft', 'rot') : ''}${koll ? chip('Überschneidung', 'rot') : ''}${e.typ === 'vorort' && bew !== dauerMin(e) ? `<span class="tert">→ ${Fmt.dauer(bew)} gezählt</span>` : ''}${e.quelle === 'foto' ? ico('cam',14) : ''}
     </div>
     <div class="mini tert">${Verdienst.zerlegung(p.b)}</div>${Geo.fazit(e) ? `<div>${Geo.protokollZeile(e)}</div>` : ''}</div>`;
 }
@@ -585,7 +602,7 @@ function statBasis() {
 }
 function statistik(von, bis) {
   const es = aktive().filter(e => B(e) >= von && B(e) < bis), ts = DB.tage.filter(t => new Date(t.beginn) >= von && new Date(t.beginn) < bis);
-  const s = { technisch: 0, vorOrt: 0, tMin: 0, vMin: 0, tage: ts.length, mitAnruf: 0, laengster: 0 };
+  const s = { technisch: 0, vorOrt: 0, tMin: 0, vMin: 0, tage: ts.length, mitAnruf: 0, laengster: 0, anrufe: es.reduce((x, e) => x + anrufe(e), 0) };
   for (const e of es) { const d = dauerMin(e); if (e.typ === 'technisch') { s.technisch++; s.tMin += d; } else { s.vorOrt++; s.vMin += d; } s.laengster = Math.max(s.laengster, d); }
   s.mitAnruf = ts.filter(t => es.some(e => B(e) >= new Date(t.beginn) && B(e) < new Date(t.ende))).length;
   s.oeT = s.technisch ? s.tMin / s.technisch : 0; s.oeV = s.vorOrt ? s.vMin / s.vorOrt : 0; s.jeNacht = s.tage ? (s.technisch + s.vorOrt) / s.tage : 0; s.ruhig = Math.max(0, s.tage - s.mitAnruf); s.gesamt = s.tMin + s.vMin;
@@ -611,7 +628,7 @@ function viewStatistik() {
   const z = (k, a1, b1, c) => `<tr><td>${c ? `<span class="dot" style="width:8px;height:8px;background:${c};box-shadow:none"></span>` : ''}<span class="${k.startsWith(' ') ? 'sec' : ''}">${k}</span></td><td class="b mono nw">${a1}</td><td class="sec mono nw">${b1}</td></tr>`;
   h += karte(`<table><tr><th></th><th>${Fmt.monat(UI.statMonat)}</th><th>Jahr ${sb.jahr}</th></tr>
     ${z('Technische Einsätze (daheim)', m.technisch, j.technisch, C.technisch)}${z(' Ø Dauer', Fmt.dauer(m.oeT), Fmt.dauer(j.oeT))}${z(' gesamt', Fmt.dauer(m.tMin), Fmt.dauer(j.tMin))}
-    ${z('Einsätze vor Ort', m.vorOrt, j.vorOrt, C.vorort)}${z(' Ø Dauer', Fmt.dauer(m.oeV), Fmt.dauer(j.oeV))}${z(' gesamt', Fmt.dauer(m.vMin), Fmt.dauer(j.vMin))}${z('Einsatzzeit gesamt', Fmt.dauer(m.gesamt), Fmt.dauer(j.gesamt), C.grund)}
+    ${z('Einsätze vor Ort', m.vorOrt, j.vorOrt, C.vorort)}${z(' Ø Dauer', Fmt.dauer(m.oeV), Fmt.dauer(j.oeV))}${z(' gesamt', Fmt.dauer(m.vMin), Fmt.dauer(j.vMin))}${z('Einsatzzeit gesamt', Fmt.dauer(m.gesamt), Fmt.dauer(j.gesamt), C.grund)}${z('Anrufe gesamt', m.anrufe, j.anrufe)}
     <tr><td colspan="3"><hr></td></tr>${z('Bereitschaftstage', m.tage, j.tage, C.pauschale)}${z('Nächte mit Anruf', m.mitAnruf, j.mitAnruf)}${z('Nächte ohne Anruf', m.ruhig, j.ruhig)}${z('Ø Einsätze je Nacht', m.jeNacht.toFixed(1), j.jeNacht.toFixed(1))}${z('Längster Einsatz', Fmt.dauer(m.laengster), Fmt.dauer(j.laengster))}</table>`, 'Kennzahlen');
   // Uhrzeit
   const sw = stundenWerte(a), sumS = sw.t.reduce((x, y) => x + y, 0) + sw.v.reduce((x, y) => x + y, 0);
@@ -649,7 +666,7 @@ function viewStatistik() {
   return h;
 }
 function stundenWerte(a) { const t = Array(24).fill(0), v = Array(24).fill(0); for (const e of a) { const arr = e.typ === 'vorort' ? v : t;
-  if (UI.masz === 'anrufe') arr[B(e).getHours()]++; else { let cur = B(e); const ende = EW(e); while (cur < ende) { const h = cur.getHours(); const nx = new Date(cur); nx.setMinutes(0, 0, 0); nx.setHours(h + 1); const next = nx < ende ? nx : ende; arr[h] += (next - cur) / 60000; cur = next; } } } return { t, v }; }
+  if (UI.masz === 'anrufe') { arr[B(e).getHours()]++; for (const z of e.anrufZeiten || []) arr[new Date(z).getHours()]++; } else { let cur = B(e); const ende = EW(e); while (cur < ende) { const h = cur.getHours(); const nx = new Date(cur); nx.setMinutes(0, 0, 0); nx.setHours(h + 1); const next = nx < ende ? nx : ende; arr[h] += (next - cur) / 60000; cur = next; } } } return { t, v }; }
 const fmtM = x => UI.masz === 'anrufe' ? `${Math.round(x)}` : Fmt.dauer(x);
 function stundeText(sw, s) { if (s == null) return null; return `${s}:00–${s + 1}:00 Uhr: ${UI.masz === 'anrufe' ? Math.round(sw.t[s] + sw.v[s]) + ' Anrufe' : Fmt.dauer(sw.t[s] + sw.v[s])} · technisch ${fmtM(sw.t[s])} · vor Ort ${fmtM(sw.v[s])}`; }
 function spitzeText(sw) { const s = sw.t.map((x, i) => x + sw.v[i]), mx = Math.max(...s); if (mx <= 0) return ''; const i = s.indexOf(mx), ges = s.reduce((a, b) => a + b, 0), nacht = s.filter((_, h) => h >= 20 || h < 6).reduce((a, b) => a + b, 0);
